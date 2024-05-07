@@ -1,5 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
 
+label,
+input {
+  font-family: 'Plus Jakarta Sans';
+}
+
 .background {
   display: flex;
   align-items: center;
@@ -41,6 +46,14 @@
   margin-bottom: 42px;
 }
 
+.home-login {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  vertical-align: top;
+}
+
 .home-buttons {
   display: flex;
   flex-direction: row;
@@ -49,11 +62,18 @@
   vertical-align: top;
 }
 
-#btn-comenzar {
+#btn-log-in,
+#btn-registrarse {
+  margin-top: 20px;
   color: #9fa6b7;
 }
 
-#btn-comenzar:hover {
+#btn-log-in:hover,
+#btn-registrarse:hover {
   background-color: #9fa6b7;
   color: black;
+}
+
+#error-message {
+  font-family: 'Plus Jakarta Sans';
 }
