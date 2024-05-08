@@ -20,8 +20,8 @@ layout = html.Div(children=[
                     html.Label("Contraseña"),
                     dcc.Input(type='password',id='input-contrasena'),
                     html.Div(className='home-buttons',children=[
-                        html.Button(id="btn-registrarse", children="Registrarse"),
                         html.Button(id="btn-log-in", children="Log-In"),
+                        html.Button(id="btn-registrarse", children="Registrarse"),
                         dcc.Location(id='url', refresh=True),
                     ]),
                     html.P(id="error-message",className="error-message")

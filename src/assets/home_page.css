@@ -27,6 +27,10 @@ input {
 
 .title-buttons {
   /* background-color: lightblue; */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   width: 380px;
   height: 380px;
   margin-right: 50px;
@@ -56,7 +60,7 @@ input {
 
 .home-buttons {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   vertical-align: top;
