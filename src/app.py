@@ -7,7 +7,7 @@ server = app.server
 
 
 app.layout = html.Div(children=[
-	dash.page_container
+	dash.page_container,
 ])
 
 

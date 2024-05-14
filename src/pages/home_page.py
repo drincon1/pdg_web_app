@@ -1,7 +1,7 @@
 import sys
 sys.path.append("..")
 import dash_bootstrap_components as dbc
-import dash 
+import dash
 from dash import html, Output, Input, State, callback, dcc
 from connection import MongoDB
 
@@ -42,15 +42,15 @@ layout = html.Div(children=[
 def registrarse(usuario,contrasena,n_clicks):
     if n_clicks is None:
         raise dash.exceptions.PreventUpdate
-    
+
     new_usuario = mongo.create_usuario(usuario=usuario,contrasena=contrasena)
     return f'{new_usuario}'
 
-    
+
 
 @callback(
     [Output('url', 'pathname'),
-     Output('error-message','children')],
+     Output('error-message','children'),],
     [State('input-usuario','value'),
      State('input-contrasena','value')],
     Input('btn-log-in', 'n_clicks'),
@@ -59,12 +59,10 @@ def registrarse(usuario,contrasena,n_clicks):
 def iniciar_sesion(usuario, contrasena, n_clicks):
     if n_clicks is None:
         raise dash.exceptions.PreventUpdate
-    
-    usuario_valido = mongo.iniciar_sesion(usuario=usuario, contrasena=contrasena)
-    
-    if usuario_valido:
-        return '/cuestionario',''  # Modify this path if necessary
-    else:
-        return '/','Usuario o Contraseña incorrecta'  # Redirect to the default location if usuario is False
 
-    
+    usuario_valido = mongo.iniciar_sesion(usuario=usuario, contrasena=contrasena)
+
+    if usuario_valido:
+        return '/cuestionario',''
+    else:
+        return '/','Usuario o Contraseña incorrecta'
