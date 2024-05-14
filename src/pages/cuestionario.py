@@ -28,8 +28,14 @@ layout = html.Div(children=[
                 html.Button("Guardar respuestas",id='btn-guardar-respuestas'),
                 html.Button("Siguiente",id='btn-siguiente'),
             ]),
-            html.Div(className='seccion-preguntas',id='seccion-preguntas'),
-            html.Div(className='seccion-preguntas-hijas',id='seccion-preguntas-hijas')
+            html.Div(className="seccion-preguntas-respuestas", children=[
+                html.Div(className='seccion-preguntas',id='seccion-preguntas'),
+                html.Div(className='seccion-preguntas-hijas',id='seccion-preguntas-hijas')
+            ]),
+            html.Div(className='seccion-terminar', children=[
+                html.Button("Terminar",id='btn-terminar'),
+                dcc.Location(id='url_indicadores', refresh=True),
+            ]),
         ])
     ])
 ])
@@ -269,6 +275,15 @@ def anterior_pregunta(num_pregunta,n_clicks):
     return obtener_pregunta(str(num_pregunta-1)),num_pregunta-1
 
 
+@callback(
+    Output('url_indicadores', 'pathname'),
+    Input('btn-terminar', 'n_clicks'),
+    prevent_initial_call=True
+)
+def iniciar_sesion(n_clicks):
+    if n_clicks is None:
+        raise dash.exceptions.PreventUpdate
 
+    return '/indicadores'
 
 # ----------------------------------------

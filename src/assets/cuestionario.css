@@ -13,6 +13,17 @@
   gap: 1px;
 }
 
+.seccion-preguntas-respuestas {
+  display: flex;
+  flex-direction: column;
+  border: 1px white solid;
+  overflow-y: auto;
+  height: 400px;
+  padding-top: 30px;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
 .seccion-preguntas{
   display: flex;
   flex-direction: column;
@@ -27,18 +38,27 @@
   flex-direction: column;
   /* border: 1px white solid; */
   /* height: 400px; */
-  /* padding-top: 30px; */
+  padding-top: 30px;
   padding-left: 50px;
 }
+
+
 
 .texto-pregunta {
   font-family: 'Plus Jakarta Sans';
   font-size: large;
 }
 
-.seccion-botones {
+.seccion-botones{
   display: flex;
   flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.seccion-terminar {
+  display: flex;
+  flex-direction: row-reverse;
   align-items: center;
   justify-content: space-between;
 }
