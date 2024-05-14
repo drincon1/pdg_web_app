@@ -31,6 +31,9 @@ class MongoDB:
             if usr['contrasena'] != contrasena:
                 return False
 
+            # Set an environment variable
+            os.environ['USERNAME'] = usuario
+
             return True
 
         except Exception as e:
@@ -98,33 +101,27 @@ class MongoDB:
 
 # ---------------- RESPUESTAS ----------------
 
-    def get_respuestas(self, usuario: str) -> dict:
+    def get_respuestas(self) -> dict:
         try:
+            user = os.environ.get("USERNAME")
             collection = self.database['usuarios']
-            usu_dict = collection.find_one({"usuario": usuario}, {'respuestas':1,"_id": 0})
+            usu_dict = collection.find_one({"usuario": user}, {'respuestas':1,"_id": 0})
 
             return usu_dict  # Return the user document if found, None otherwise
 
         except Exception as e:
             print(e)
 
-    def update_respuestas(self, usuario: str, respuestas: dict) -> bool:
+    def update_respuestas(self, respuestas: dict) -> bool:
         try:
-            if usuario == '' or usuario is None:
-                return False
-
-            existe = self.get_usuario(usuario)
-
-            if not existe:
-                return False
-
+            usuario = os.environ.get("USERNAME")
 
             collection = self.database['usuarios']
 
             document_to_update = {"usuario": usuario}
 
             new_respuestas = {"$set" : {"respuestas": respuestas}}
-
+            
             result = collection.update_one(document_to_update, new_respuestas)
 
             return True

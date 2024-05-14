@@ -125,13 +125,13 @@ def get_preguntas():
 
 def get_respuestas():
     global respuestas
-    respuestas = mongo.get_respuestas('daniel')['respuestas']
-    print(respuestas)
+    respuestas = mongo.get_respuestas()['respuestas']
+    # print(respuestas)
 
 
 def update_respuestas():
     global respuestas
-    mongo.update_respuestas('daniel',respuestas)
+    mongo.update_respuestas(respuestas)
 
 
 
