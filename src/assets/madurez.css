@@ -1,0 +1,13 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
+
+
+.madurez-background {
+  display: flex;
+  align-items: flex-start;
+  background-color: #171b26;
+  height: 700px;
+}
+
+.card_nivel_madurez{
+  border: 1px white solid;
+}

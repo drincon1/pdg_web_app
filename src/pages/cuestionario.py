@@ -284,6 +284,6 @@ def iniciar_sesion(n_clicks):
     if n_clicks is None:
         raise dash.exceptions.PreventUpdate
 
-    return '/indicadores'
+    return '/nivel_madurez'
 
 # ----------------------------------------

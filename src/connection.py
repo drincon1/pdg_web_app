@@ -121,7 +121,7 @@ class MongoDB:
             document_to_update = {"usuario": usuario}
 
             new_respuestas = {"$set" : {"respuestas": respuestas}}
-            
+
             result = collection.update_one(document_to_update, new_respuestas)
 
             return True
