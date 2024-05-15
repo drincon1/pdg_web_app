@@ -47,22 +47,23 @@ def definir_nivel():
     global puntos_dimension, dimensiones, niveles, porcentajes, pesos, puntos_total, nivel
     puntos_dimension = mongo.get_puntos_por_dimension()
     
-    for dimen in puntos_dimension:
-        puntos = puntos_dimension[dimen]
-        total = dimensiones[dimen]['total']
-        peso = dimensiones[dimen]['peso']
-        porcentaje = (puntos/total)*100
-        porcentajes.append(porcentaje)
-        puntos_ponderados = peso * porcentaje
-        pesos.append(puntos_ponderados)
-        puntos_total = puntos_total + puntos_ponderados
+    if len(puntos_dimension) > 0:
+        for dimen in puntos_dimension:
+            puntos = puntos_dimension[dimen]
+            total = dimensiones[dimen]['total']
+            peso = dimensiones[dimen]['peso']
+            porcentaje = (puntos/total)*100
+            porcentajes.append(porcentaje)
+            puntos_ponderados = peso * porcentaje
+            pesos.append(puntos_ponderados)
+            puntos_total = puntos_total + puntos_ponderados
 
-    for level, level_details in niveles.items():
-        puntaje_min = level_details["puntaje_min"]
-        puntaje_max = level_details["puntaje_max"]
+        for level, level_details in niveles.items():
+            puntaje_min = level_details["puntaje_min"]
+            puntaje_max = level_details["puntaje_max"]
 
-        if puntaje_min <= puntos_total <= puntaje_max:
-            nivel = level
+            if puntaje_min <= puntos_total <= puntaje_max:
+                nivel = level
 
 
     # print('porcentajes', porcentajes, '\npesos', pesos, '\npuntos_total', puntos_total, '\nnivel', nivel)

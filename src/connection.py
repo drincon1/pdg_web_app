@@ -101,7 +101,12 @@ class MongoDB:
 
 # ---------------- DIMENSIONES ----------------
     def get_puntos_por_dimension(self) -> dict:
-        respuestas:list = self.get_respuestas()['respuestas']
+        rsp_mongo = self.get_respuestas()
+        
+        if rsp_mongo is None:
+            return {}
+        
+        respuestas:list = rsp_mongo['respuestas']
         puntos_dimension:dict = {
             'Contexto de la organización': 0,
             'Liderazgo': 0,
