@@ -160,7 +160,8 @@ def get_puntos_num_pregunta_respuesta(num_pregunta: str, respuesta: str) -> int:
 
 def get_puntos_pregunta_hija(hija: dict, respuesta: str) -> int:
     opciones = hija['opciones']
-
+    if isinstance(respuesta,list):
+        respuesta = respuesta[0]
     for opc in opciones:
         if opc['opcion'] == respuesta:
             return opc['puntos']
@@ -354,19 +355,23 @@ def guardar_respuesta(value):
 
 @callback(
     [Output('seccion-preguntas', 'children', allow_duplicate=True),
-     Output('seccion-preguntas-hijas','children',allow_duplicate=True)],
+     Output('seccion-preguntas-hijas','children',allow_duplicate=True),
+     Output('btn-siguiente','disabled',allow_duplicate=True),
+     Output('btn-terminar','disabled',allow_duplicate=True)],
     Input('avance-preguntas', 'value'),
     prevent_initial_call=True
 )
 def actualizar_pregunta(numero_pregunta):
-    return obtener_pregunta(str(numero_pregunta)), []
+    if numero_pregunta == 40:
+        return obtener_pregunta(str(numero_pregunta)), [], True, False
+    return obtener_pregunta(str(numero_pregunta)), [], False, True
 
 @callback(
     [Output('seccion-preguntas','children',allow_duplicate=True),
      Output('avance-preguntas','value',allow_duplicate=True),
      Output('seccion-preguntas-hijas','children',allow_duplicate=True),
-     Output('btn-siguiente','disabled'),
-     Output('btn-terminar','disabled')],
+     Output('btn-siguiente','disabled',allow_duplicate=True),
+     Output('btn-terminar','disabled',allow_duplicate=True)],
     State('avance-preguntas','value'),
     Input('btn-siguiente','n_clicks'),
     prevent_initial_call=True
@@ -403,6 +408,6 @@ def iniciar_sesion(n_clicks):
     if n_clicks is None:
         raise dash.exceptions.PreventUpdate
 
-    return '/nivel_madurez'
+    return '/madurez'
 
 # ----------------------------------------

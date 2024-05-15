@@ -97,6 +97,37 @@ class MongoDB:
 
         except Exception as e:
             print(e)
+# ---------------------------------------------
+
+# ---------------- DIMENSIONES ----------------
+    def get_puntos_por_dimension(self) -> dict:
+        respuestas:list = self.get_respuestas()['respuestas']
+        puntos_dimension:dict = {
+            'Contexto de la organización': 0,
+            'Liderazgo': 0,
+            'Planificación':0,
+            'Soporte': 0,
+            'Operación': 0,
+            'Evaluación del desempeño': 0,
+            'Mejora': 0
+        }
+
+        for rsp in respuestas:
+            for dimension in puntos_dimension:
+                if isinstance(rsp, dict):
+                    if dimension == rsp['dimension']:
+                        # print(dimension, ':', puntos_dimension[dimension])
+                        if rsp['puntos'] is not None:
+                            puntos_dimension[dimension] = puntos_dimension[dimension] + rsp['puntos']
+                if isinstance(rsp,list):
+                    for resp_ in rsp:
+                        if dimension == resp_['dimension']:
+                            if resp_['puntos'] is not None:
+                                puntos_dimension[dimension] = puntos_dimension[dimension] + resp_['puntos']
+
+        return puntos_dimension
+
+        
 # --------------------------------------------
 
 # ---------------- RESPUESTAS ----------------
@@ -104,6 +135,9 @@ class MongoDB:
     def get_respuestas(self) -> dict:
         try:
             user = os.environ.get("USERNAME")
+            # IMPORTANT: DELETE THE NEXT TWO LINES BEFORE PUSHING TO REPOSITORY!
+            if user is None:
+                user = 'daniel'
             collection = self.database['usuarios']
             usu_dict = collection.find_one({"usuario": user}, {'respuestas':1,"_id": 0})
         
