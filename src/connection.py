@@ -106,7 +106,7 @@ class MongoDB:
             user = os.environ.get("USERNAME")
             collection = self.database['usuarios']
             usu_dict = collection.find_one({"usuario": user}, {'respuestas':1,"_id": 0})
-
+        
             return usu_dict  # Return the user document if found, None otherwise
 
         except Exception as e:
@@ -114,16 +114,19 @@ class MongoDB:
 
     def update_respuestas(self, respuestas: dict) -> bool:
         try:
+            respuestas_update = []
+            for key in respuestas:
+                respuestas_update.append(respuestas[key])
+
             usuario = os.environ.get("USERNAME")
 
             collection = self.database['usuarios']
 
             document_to_update = {"usuario": usuario}
 
-            new_respuestas = {"$set" : {"respuestas": respuestas}}
+            new_respuestas = {"$set" : {"respuestas": respuestas_update}}
 
             result = collection.update_one(document_to_update, new_respuestas)
-
             return True
 
         except Exception as e:
