@@ -135,9 +135,6 @@ class MongoDB:
     def get_respuestas(self) -> dict:
         try:
             user = os.environ.get("USERNAME")
-            # IMPORTANT: DELETE THE NEXT TWO LINES BEFORE PUSHING TO REPOSITORY!
-            if user is None:
-                user = 'daniel'
             collection = self.database['usuarios']
             usu_dict = collection.find_one({"usuario": user}, {'respuestas':1,"_id": 0})
         
