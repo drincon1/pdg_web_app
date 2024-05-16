@@ -1,5 +1,6 @@
 import sys
 sys.path.append("..")
+import os
 import pandas as pd
 import dash
 from dash import html, callback, Input, State, Output, dcc, ALL
@@ -15,7 +16,7 @@ respuestas: dict = {}
 
 """
     respuestas = { 
-        numero: {numero: "", respuesta: "", puntos: ""}
+        numero: {numero: "", respuesta: "", puntos: "", dimension: ""}
     }
     
 """
@@ -28,19 +29,20 @@ layout = html.Div(children=[
     html.Div(className="background", id='background', children=[
         html.Div(className="seccion-cuestionario", children=[
             html.Div(className='seccion-progreso',children=[
-                dcc.Slider(id='avance-preguntas',min=1, max=40, step=1, value=1)
+                dcc.Slider(id='avance-preguntas',min=1, max=41, step=1, value=1, className="slider"),
+                html.Hr()
             ]),
             html.Div(className='seccion-botones', children=[
-                html.Button("Atrás",id='btn-atras'),
-                html.Button("Guardar respuestas",id='btn-guardar-respuestas'),
-                html.Button("Siguiente",id='btn-siguiente'),
+                html.Button("Atrás",id='btn-atras', className='btn-cuestionario', disabled=True),
+                html.Button("Guardar respuestas",id='btn-guardar-respuestas', className='btn-cuestionario'),
+                html.Button("Siguiente",id='btn-siguiente', className='btn-cuestionario'),
             ]),
             html.Div(className="seccion-preguntas-respuestas", children=[
                 html.Div(className='seccion-preguntas',id='seccion-preguntas'),
                 html.Div(className='seccion-preguntas-hijas',id='seccion-preguntas-hijas')
             ]),
             html.Div(className='seccion-terminar', children=[
-                html.Button("Terminar",id='btn-terminar', className="button-primary", disabled=True),
+                html.Button("Terminar",id='btn-terminar', disabled=True, className='btn-cuestionario'),
                 dcc.Location(id='url_indicadores', refresh=True),
             ]),
         ])
@@ -134,6 +136,88 @@ def display_pregunta_hija(pregunta: dict):
             ),
         ])
 
+def display_sectores(sectores_industrias: dict):
+    sector = None
+    sector_mongo = mongo.get_sector_usuario()
+
+    if sector_mongo is not None:
+        sector = sector_mongo['sector']
+
+    return html.Div([
+            html.P("Seleccione su sector"),
+            dcc.Dropdown(
+                id="select-sector",
+                options=[key for key in sectores_industrias],
+                value = sector
+            )
+        ])
+
+def display_industrias(sectores_industrias: dict):
+    industrias = []
+    industria = None
+
+    sector_mongo = mongo.get_sector_usuario()
+    if sector_mongo is not None and sector_mongo['sector'] is not None:
+        industria_mongo = mongo.get_industria_usuario()
+        if industria_mongo is not None:
+            industria = industria_mongo['industria']
+            industrias = sectores_industrias[sector_mongo['sector']]
+    else:
+        for key in sectores_industrias:
+            for indu in sectores_industrias[key]:
+                industrias.append(indu)
+
+    return html.Div([
+            html.P("Seleccione su sector"),
+            dcc.Dropdown(
+                id="select-industria",
+                options=[ind for ind in industrias],
+                value=industria
+            )
+        ])
+
+def display_departamentos():
+    departamento = []
+    departamentos = mongo.get_departamentos_usuario()['departamentos']
+    if len(departamentos) > 0:
+        departamento = departamentos
+    departamentos = mongo.get_departamentos_municipios()
+
+    return html.Div([
+            html.P("Seleccione sus departamentos", style={'margin-top':'10px'}),
+            dcc.Dropdown(
+                id="select-departamentos",
+                options=[key for key in departamentos],
+                multi=True,
+                value = departamento,
+            )
+        ])
+
+def display_municipios():
+    municipio = []
+    municipios = mongo.get_municipios_usuario()['municipios']
+    if len(municipios) > 0:
+        municipio = municipios
+    departamentos = mongo.get_departamentos_municipios()
+
+    depa_muni = []
+    for depa in departamentos:
+        for muni in departamentos[depa]:
+            depa_muni.append(f"{depa}-{muni}")
+
+    return html.Div([
+            html.P("Seleccione sus municipios",style={'margin-top':'10px'}),
+            dcc.Dropdown(
+                id="select-municipios",
+                options=[dm for dm in depa_muni],
+                multi=True,
+                value = municipio,
+            )
+        ])
+    
+
+
+
 def get_preguntas():
     global preguntas
     preguntas = mongo.get_preguntas()
@@ -141,13 +225,21 @@ def get_preguntas():
 
 def get_respuestas():
     global respuestas
-    respuestas = mongo.get_respuestas()
+    mongo_rsp = mongo.get_respuestas()['respuestas']
+
+    dict_respuestas = {}
+    for rsp in mongo_rsp:
+        if isinstance(rsp, dict):
+            dict_respuestas[rsp['numero']] = rsp
+        elif isinstance(rsp, list):
+            dict_respuestas[rsp[0]['numero']] = rsp
+    
+    respuestas = dict_respuestas
 
 
 def update_respuestas():
     global respuestas
     mongo.update_respuestas(respuestas)
-    # print(respuestas)
     
 
 def get_puntos_num_pregunta_respuesta(num_pregunta: str, respuesta: str) -> int:
@@ -162,6 +254,7 @@ def get_puntos_pregunta_hija(hija: dict, respuesta: str) -> int:
     opciones = hija['opciones']
     if isinstance(respuesta,list):
         respuesta = respuesta[0]
+
     for opc in opciones:
         if opc['opcion'] == respuesta:
             return opc['puntos']
@@ -213,7 +306,7 @@ def get_hija_num_papa_num_hija(num_papa: str, num_hija: str) -> str:
      Input('background','children'),
 )
 def obtener_primera_pregunta(children):
-    # get_respuestas()
+    get_respuestas()
     global preguntas
     get_preguntas()
 
@@ -224,6 +317,31 @@ def obtener_primera_pregunta(children):
 )
 def upload_respuestas(n_clicks):
     update_respuestas()
+
+@callback(
+    Input('select-sector','value')
+)
+def set_sector(sector):
+    mongo.update_sector_usuario(sector)
+
+@callback(
+    Input('select-industria','value')
+)
+def set_industria(industria):
+    mongo.update_industria_usuario(industria)
+
+@callback(
+    Input('select-departamentos','value')
+)
+def set_departamentos(departamentos):
+    mongo.update_departamentos_usuario(departamentos)
+
+@callback(
+    Input('select-municipios','value')
+)
+def set_municipios(municipios):
+    mongo.update_municipios_usuario(municipios)
+
 
 
 @callback(
@@ -245,7 +363,6 @@ def guardar_respuesta(value):
         respuesta = dict_respuesta['value']
         elementos = dict_respuesta['prop_id'].split('.')
         num_pregunta_hija = json.loads(elementos[0] + '.' + elementos[1])['index']
-        # print("dict_respuesta",dict_respuesta)
 
         num_pregunta_papa = num_pregunta_hija.split('.')[0]
         respuesta_papa = ""
@@ -266,7 +383,6 @@ def guardar_respuesta(value):
             
             respuestas[num_pregunta_hija] = {'numero': num_pregunta_hija, 'respuesta': respuesta, 'puntos': puntos, 'dimension': hija['dimension']}
             
-            # print("Respuestas:\n", respuestas)
             display_final.append(display_pregunta_hija(hija))
 
             # return display_pregunta_hija(hija)
@@ -290,8 +406,6 @@ def guardar_respuesta(value):
 
                 display_final.append(display_pregunta_hija(hija))
                 displays_hijas.append(display_pregunta_hija(hija))
-            
-            # print("Respuestas:\n", respuestas)
 
             if len(respuesta_papa) > 0:
                 respuestas[num_pregunta] = respuestas_guardar
@@ -315,9 +429,24 @@ def guardar_respuesta(value):
         respuestas[num_pregunta] = {'numero': num_pregunta,'respuesta': respuesta, 'puntos':puntos, 'dimension': preguntas[num_pregunta]['dimension']}
 
         
-         # print("Respuestas:\n", respuestas)
-
-        if hija is None or len(hija) == 0:
+        if num_pregunta == '1' and respuesta == 'SI':
+            sectores_industrias = mongo.get_sectores_industrias()
+            return display_sectores(sectores_industrias)
+        
+        elif num_pregunta == '1' and respuesta == 'NS/NR':
+            mongo.update_sector_usuario(None)
+            mongo.update_industria_usuario(None)
+            return []
+        
+        elif num_pregunta == '2' and respuesta == 'SI':
+            sectores_industrias = mongo.get_sectores_industrias()
+            return display_industrias(sectores_industrias)
+        
+        elif num_pregunta == '2' and respuesta == 'NS/NR':
+            mongo.update_industria_usuario(None)
+            return []
+        
+        elif hija is None or len(hija) == 0:
             delete_key = ""
             for key in respuestas:
                 if '.' in key and key.split('.')[0] == num_pregunta:
@@ -329,7 +458,7 @@ def guardar_respuesta(value):
         return display_pregunta_hija(hija)
 
     elif isinstance(respuesta,list):
-
+        
         display_hijas = []
         respuestas_guardar = []
 
@@ -346,10 +475,17 @@ def guardar_respuesta(value):
             hija = get_pregunta_hija(num_pregunta=num_pregunta, respuesta=rsp)
             if hija:
                 display_hijas.append(display_pregunta_hija(hija))
-        # print("Respuestas:\n", respuestas)
+        
         if len(respuesta) > 0:
             respuestas[num_pregunta] = respuestas_guardar
         
+        if num_pregunta == '3' and 'Departamento' in respuesta and 'Municipio' not in respuesta:
+            return display_departamentos()
+        elif num_pregunta == '3' and 'Municipio' in respuesta and 'Departamento' not in respuesta:
+            return display_municipios()
+        elif num_pregunta == '3' and 'Municipio' in respuesta and 'Departamento' in respuesta:
+            return [display_departamentos(),display_municipios()]
+
         return display_hijas
 
 
@@ -357,14 +493,18 @@ def guardar_respuesta(value):
     [Output('seccion-preguntas', 'children', allow_duplicate=True),
      Output('seccion-preguntas-hijas','children',allow_duplicate=True),
      Output('btn-siguiente','disabled',allow_duplicate=True),
-     Output('btn-terminar','disabled',allow_duplicate=True)],
+     Output('btn-terminar','disabled',allow_duplicate=True),
+     Output('btn-atras','disabled',allow_duplicate=True),],
     Input('avance-preguntas', 'value'),
     prevent_initial_call=True
 )
 def actualizar_pregunta(numero_pregunta):
-    if numero_pregunta == 40:
-        return obtener_pregunta(str(numero_pregunta)), [], True, False
-    return obtener_pregunta(str(numero_pregunta)), [], False, True
+    if numero_pregunta == 41:
+        return obtener_pregunta(str(numero_pregunta)), [], True, False, False
+    if numero_pregunta == 1:
+        return obtener_pregunta(str(numero_pregunta)), [], False, True, True
+    
+    return obtener_pregunta(str(numero_pregunta)), [], False, True, False
 
 @callback(
     [Output('seccion-preguntas','children',allow_duplicate=True),
@@ -379,7 +519,7 @@ def actualizar_pregunta(numero_pregunta):
 def siguiente_pregunta(num_pregunta,n_clicks):
     if n_clicks is None:
         raise PreventUpdate
-    if num_pregunta == 39:
+    if num_pregunta == 40:
          return obtener_pregunta(str(num_pregunta+1)),num_pregunta+1, [], True, False
     return obtener_pregunta(str(num_pregunta+1)),num_pregunta+1, [], False, True
 
@@ -406,8 +546,8 @@ def anterior_pregunta(num_pregunta,n_clicks):
 )
 def iniciar_sesion(n_clicks):
     if n_clicks is None:
-        raise dash.exceptions.PreventUpdate
-
+        raise dash.exceptions.PreventUpdate    
+    update_respuestas()
     return '/madurez'
 
 # ----------------------------------------

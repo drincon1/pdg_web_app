@@ -4,24 +4,26 @@
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
-  background-color: #171b269a;
-  color: #9fa6b7;
+  /* background-color: #6f89cf9a; */
+  /* color: #9fa6b7; */
   padding: 40px;
   border-radius: 50px;
   width: 1000px;
-  height: 600px;
+  height: 900px;
   gap: 1px;
+  margin-top: 60px;
 }
 
 .seccion-preguntas-respuestas {
   display: flex;
   flex-direction: column;
-  border: 1px white solid;
+  border: 3px rgb(87, 101, 255) solid;
   overflow-y: auto;
-  height: 400px;
+  height: 800px;
   padding-top: 30px;
   padding-left: 20px;
   padding-right: 20px;
+  border-radius: 10px;
 }
 
 .seccion-preguntas{
@@ -42,8 +44,6 @@
   padding-left: 50px;
 }
 
-
-
 .texto-pregunta {
   font-family: 'Plus Jakarta Sans';
   font-size: large;
@@ -61,4 +61,46 @@
   flex-direction: row-reverse;
   align-items: center;
   justify-content: space-between;
+}
+
+.btn-cuestionario {
+  display: inline-block;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  font-family: 'Plus Jakarta Sans';
+}
+
+.btn-cuestionario:hover{
+  background-color: #9fa6b7;
+  color: black;
+  font-family: 'Plus Jakarta Sans';
+}
+
+
+/* Target the entire slider track */
+.slider .rc-slider-track {
+  background-color: #2c125f; /* Adjust background color */
+  height: 5px; /* Adjust track height */
+}
+
+/* Target the filled portion of the track */
+.slider .rc-slider-handle {
+  background-color: #007bff; /* Adjust handle color */
+  border-color: #007bff; /* Adjust handle border color */
+}
+
+/* Target the slider handle itself */
+.slider .rc-slider-handle:focus,
+.slider .rc-slider-handle:hover {
+  background-color: #0067cc; /* Adjust handle hover/focus color */
+  border-color: #0067cc; /* Adjust handle hover/focus border color */
+}
+
+
+
+/* Target the slider marks labels (optional) */
+.slider .rc-slider-mark-text {
+  color: #333; /* Adjust label color */
+  font-weight: bold;
+  font-family: 'Plus Jakarta Sans';
 }

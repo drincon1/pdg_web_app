@@ -11,7 +11,7 @@ input {
   justify-content: center;
   /* height: 100vh; */
   width: 100%;
-  background-color: #171b26;
+  /* background-color: #171b26; */
 }
 
 .home-page {
@@ -19,11 +19,13 @@ input {
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  background-color: #171b269a;
-  color: #9fa6b7;
+  background-color: #6f89cf9a;
+  color:white;
   padding: 40px;
+  margin-top: 60px;
   border-radius: 50px;
-  height: 550px;
+  height: 500px;
+  width: 900px;
 }
 
 .title-buttons {
@@ -47,7 +49,7 @@ input {
   font-family: 'Plus Jakarta Sans';
   font-weight: 600;
   margin-bottom: 20px;
-  font-size: 45px;
+  font-size: 32px;
   margin-bottom: 42px;
 }
 
@@ -69,14 +71,17 @@ input {
 
 #btn-log-in,
 #btn-registrarse {
+  display: inline-block;
   margin-top: 20px;
-  color: #9fa6b7;
+  color: black;
+  font-family: 'Plus Jakarta Sans';
 }
 
 #btn-log-in:hover,
 #btn-registrarse:hover {
   background-color: #9fa6b7;
   color: black;
+  font-family: 'Plus Jakarta Sans';
 }
 
 #error-message {

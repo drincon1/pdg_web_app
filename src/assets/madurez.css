@@ -1,13 +1,35 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
 
-
-.madurez-background {
-  display: flex;
-  align-items: flex-start;
-  background-color: #171b26;
-  height: 700px;
+H1,H2,H3,H4,H5,H6,P {
+  font-family: 'Plus Jakarta Sans';
 }
 
-.card_nivel_madurez{
-  border: 1px white solid;
+hr{
+  border-color: black;
+}
+
+.seccion-nivel-madurez {
+  display: flex;
+  flex-direction: column;
+  align-content: flex-start;
+  /* justify-content: space-evenly; */
+  /* background-color: #6f89cf9a; */
+  /* color: #9fa6b7; */
+  padding: 40px;
+  border-radius: 50px;
+  width: 1500px;
+  height: 700px;
+  gap: 1px;
+  margin-top: 60px;
+}
+
+.seccion-nivel {
+  display: flex;
+  flex-direction: row;
+  align-content: flex-start;
+  justify-content: space-evenly;
+}
+
+.card {
+  color: white;
 }

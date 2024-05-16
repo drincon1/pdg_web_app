@@ -2,7 +2,7 @@ import dash
 from dash import Dash, html, dcc, callback, Input, Output
 import dash_bootstrap_components as dbc
 
-app = Dash(__name__,pages_folder="pages",use_pages=True,suppress_callback_exceptions=True)
+app = Dash(__name__,pages_folder="pages",use_pages=True,suppress_callback_exceptions=True, external_stylesheets=[dbc.themes.BOOTSTRAP])
 server = app.server
 
 
