@@ -267,16 +267,17 @@ class MongoDB:
     def get_indicadores_usuario(self) -> dict:
         try:
             indicadores = self._get_indicadores()
-            user = os.environ.get("USERNAME")
-            # user = 'daniel'
+            # user = os.environ.get("USERNAME")
+            user = 'daniel'
             collection = self.database['usuarios']
             indicadores_dict = collection.find_one({"usuario": user}, {'indicadores':1,"_id": 0})
 
             if indicadores_dict is not None:
                 for indc in indicadores_dict['indicadores']:
-                    indicadores[indc['numero']]['propio'] = indc['propio']
-                    indicadores[indc['numero']]['mide'] = indc['mide']
-                    indicadores[indc['numero']]['dimensiones'] = indc['dimensiones']
+                    if indc['propio'] is None:
+                        indicadores[indc['numero']]['propio'] = indc['propio']
+                        indicadores[indc['numero']]['mide'] = indc['mide']
+                        indicadores[indc['numero']]['dimensiones'] = indc['dimensiones']
 
             return indicadores  # Return the user document if found, None otherwise
 
@@ -287,7 +288,8 @@ class MongoDB:
     def set_indicadores(self, indicadores):
         try:
             usuario = os.environ.get("USERNAME")
-
+            usuario = 'daniel'
+            
             collection = self.database['usuarios']
 
             document_to_update = {"usuario": usuario}

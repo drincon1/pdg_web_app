@@ -289,6 +289,30 @@ def guardar_indicadores(n_clicks):
         })
     mongo.set_indicadores(indicadores=indicadores_guardar)
 
+@callback(
+    Output('url_nuevos_indicadores', 'pathname'),
+    Input('btn-terminar-indicadores', 'n_clicks'),
+    prevent_initial_call=True
+)
+def indicadores_resultados(n_clicks):
+    if n_clicks is None:
+        raise dash.exceptions.PreventUpdate    
+    
+    global indicadores
+    indicadores_guardar = []
+    for numero in indicadores:
+        # if indicadores[numero]['mide'] == 'SI':
+        indicadores_guardar.append({
+            'numero': numero,
+            'nombre': indicadores[numero]['nombre'],
+            'propio': indicadores[numero]['propio'],
+            'mide': indicadores[numero]['mide'],
+            'dimensiones': indicadores[numero]['dimensiones'],
+        })
+    mongo.set_indicadores(indicadores=indicadores_guardar)
+
+    
+    return '/nuevos'
 
 """ -------------------------------------------- """
 
@@ -325,7 +349,7 @@ layout = html.Div(children=[
             ]),
             html.Div(className='seccion-terminar', children=[
                 html.Button("Terminar",id='btn-terminar-indicadores', disabled=True, className='btn-cuestionario'),
-                dcc.Location(id='url_ssee', refresh=True),
+                dcc.Location(id='url_nuevos_indicadores', refresh=True),
             ]),
         ])
     ])

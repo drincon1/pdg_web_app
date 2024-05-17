@@ -555,7 +555,7 @@ def anterior_pregunta(num_pregunta,n_clicks):
     Input('btn-terminar', 'n_clicks'),
     prevent_initial_call=True
 )
-def indicadores_resultados(n_clicks):
+def indicadores_ssee(n_clicks):
     if n_clicks is None:
         raise dash.exceptions.PreventUpdate    
     
@@ -567,6 +567,6 @@ def indicadores_resultados(n_clicks):
     if pregunta_indicadores in respuestas.keys() and respuestas[pregunta_indicadores]['respuesta'] == 'SI':
         return '/indicadores'
     
-    return '/madurez'
+    return '/ssee'
 
 # ----------------------------------------
