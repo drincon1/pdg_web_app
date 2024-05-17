@@ -31,8 +31,16 @@ layout = dbc.Container([
     # Título 
     dbc.Row([
         dbc.Col([
-            html.H1("Autodiagnóstico empresarial sobre el uso del agua",style={'textAlign': 'center'}),
-            html.Hr()
+            html.Div(
+                id="banner",
+                className="banner",
+                children=[
+                    html.Img(className="water-image", src="assets/imagenes/water-drop.png"),
+                    html.H3("Autodiagnóstico empresarial sobre el uso del agua - Introducción"),
+                ],
+            ),
+            # html.H1("Autodiagnóstico empresarial sobre el uso del agua",style={'textAlign': 'center'}),
+            # html.Hr()
         ], width=12)
     ]),
     dbc.Row([
@@ -59,5 +67,5 @@ layout = dbc.Container([
         ], className="d-flex justify-content-end")
     ])
 
-])
+],fluid=True)
 """ ----------------------------------------- """

@@ -53,11 +53,6 @@ def definir_nivel():
         if puntaje_min <= puntos_total <= puntaje_max:
             nivel = level
 
-def Header(name):
-    title = html.H2(name, style={"margin-top": 5})
-
-    return dbc.Row([dbc.Col(title, md=9)])
-
 """ ------------------------------------------- """
 
 """ ---------------- CALLBACKS ---------------- """
@@ -84,7 +79,7 @@ def get_puntos_por_dimension(children):
     figure.update_yaxes(title_text='% Puntos obtenidos')
 
     # Titulo madurez
-    titulo = "Nivel de madurez"
+    titulo = "Autodiagnóstico empresarial sobre el uso del agua - Resultados"
     if os.getenv("USERNAME") is not None:
         titulo = titulo + ": " + os.getenv("USERNAME")
 
@@ -120,7 +115,16 @@ layout = dbc.Container([
     # Título 
     dbc.Row([
         dbc.Col([
-            html.H1("Nivel de madurez", id="title_madurez" ,style={'textAlign': 'center'}),
+            html.Div(
+                id="banner",
+                className="banner",
+                children=[
+                    html.Img(className="water-image", src="assets/imagenes/water-drop.png"),
+                    html.H3(f"Autodiagnóstico empresarial sobre el uso del agua - Resultados",id="title_madurez"),
+                ],
+            ),
+            # html.H1("Nivel de madurez", id="title_madurez" ,style={'textAlign': 'center'}),
+            html.Br(),
             html.Hr()
         ], width=12)
     ]),
@@ -220,5 +224,5 @@ layout = dbc.Container([
             )
         ],width=5)
     ], justify="evenly")
-])
+],fluid=True)
 """ ----------------------------------------- """

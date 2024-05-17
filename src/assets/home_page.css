@@ -7,7 +7,9 @@ input {
 
 .background {
   display: flex;
-  align-items: flex-start;
+  flex-direction: column;
+  align-items: center;
+  align-content: center;
   justify-content: center;
   /* height: 100vh; */
   width: 100%;

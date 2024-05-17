@@ -27,6 +27,14 @@ dash.register_page(__name__)
 
 layout = html.Div(children=[
     html.Div(className="background", id='background', children=[
+        html.Div(
+            id="banner",
+            className="banner",
+            children=[
+                html.Img(className="water-image", src="assets/imagenes/water-drop.png"),
+                html.H3("Autodiagnóstico empresarial sobre el uso del agua - Cuestionario"),
+            ],
+        ),
         html.Div(className="seccion-cuestionario", children=[
             html.Div(className='seccion-progreso',children=[
                 dcc.Slider(id='avance-preguntas',min=1, max=41, step=1, value=1, className="slider"),
@@ -253,7 +261,10 @@ def get_puntos_num_pregunta_respuesta(num_pregunta: str, respuesta: str) -> int:
 def get_puntos_pregunta_hija(hija: dict, respuesta: str) -> int:
     opciones = hija['opciones']
     if isinstance(respuesta,list):
-        respuesta = respuesta[0]
+        if len(respuesta) > 0:
+            respuesta = respuesta[0]
+        else:
+            return 0
 
     for opc in opciones:
         if opc['opcion'] == respuesta:
@@ -382,7 +393,7 @@ def guardar_respuesta(value):
             puntos = get_puntos_pregunta_hija(hija=hija, respuesta=respuesta)
             
             respuestas[num_pregunta_hija] = {'numero': num_pregunta_hija, 'respuesta': respuesta, 'puntos': puntos, 'dimension': hija['dimension']}
-            
+            print(respuestas)
             display_final.append(display_pregunta_hija(hija))
 
             # return display_pregunta_hija(hija)
@@ -544,10 +555,18 @@ def anterior_pregunta(num_pregunta,n_clicks):
     Input('btn-terminar', 'n_clicks'),
     prevent_initial_call=True
 )
-def iniciar_sesion(n_clicks):
+def indicadores_resultados(n_clicks):
     if n_clicks is None:
         raise dash.exceptions.PreventUpdate    
+    
     update_respuestas()
+    
+    global respuestas
+    pregunta_indicadores = "41"
+    
+    if pregunta_indicadores in respuestas.keys() and respuestas[pregunta_indicadores]['respuesta'] == 'SI':
+        return '/indicadores'
+    
     return '/madurez'
 
 # ----------------------------------------

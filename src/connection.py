@@ -175,8 +175,8 @@ class MongoDB:
     def get_respuestas(self) -> dict:
         try:
             user = os.environ.get("USERNAME")
-            if user == None:
-                user = "daniel"
+            # if user == None:
+            #     user = "daniel"
             collection = self.database['usuarios']
             usu_dict = collection.find_one({"usuario": user}, {'respuestas':1,"_id": 0})
         
@@ -204,8 +204,103 @@ class MongoDB:
 
         except Exception as e:
             print(e)
-# ----------------------------------------------------------------------------------
+# ---------------------------------------------
 
+# ---------------- INDICADORES ----------------
+
+    def _get_indicadores(self) -> dict:
+        try:
+            indicadores: dict = {}
+            """
+                indicadores = {
+                    "numero" = {
+                        nombre: '', # Nombre del indicador
+                        unidad: '', # Unidades del indicador
+                        categoria: '', # Categoría del indicador
+                        fuente: '', # URL de donde se puede encontrar más información del indicador
+                        propio: '', # El indicador es propio de la empresa (SI/NO)
+                        mide: '', # La empresa mide (SI,NO,NS/NR) el indicador
+                        dimensiones: {
+                            'Granularidad': "", # Respuesta para la dimensión 'Granularidad'
+                            'Frecuencia': "", # Respuesta para la dimensión 'Frecuencia'
+                            'Comparabilidad': "", # Respuesta para la dimensión 'Comparabilidad'
+                            'Fuente': "", # Respuesta para la dimensión 'Fuente'
+                            'Tipo': "", # Respuesta para la dimensión 'Tipo'
+                            'SBT': "", # Respuesta para la dimensión 'SBT'
+                            'Validación Externa': "", # Respuesta para la dimensión 'Validación Externa'
+                        }
+                    }
+                }
+            """
+
+            collection = self.database['indicadores']
+            indicadores_dict = collection.find()
+
+            if indicadores_dict is None:
+                return indicadores
+
+            for indicador in indicadores_dict:
+                indicadores[indicador['numero']] = {
+                    'nombre': indicador['nombre'], # Nombre del indicador
+                    'unidad': indicador['unidad'], # Unidades del indicador
+                    'categoria': indicador['categoria'], # Categoría del indicador
+                    'fuente': indicador['fuente'], # URL de donde se puede encontrar más información del indicador
+                    'propio': None, # El indicador es propio de la empresa (SI/NO)
+                    'mide': None, # La empresa mide (SI,NO,NS/NR) el indicador
+                    'dimensiones': {
+                        'Granularidad': None, # Respuesta para la dimensión 'Granularidad'
+                        'Frecuencia': None, # Respuesta para la dimensión 'Frecuencia'
+                        'Comparabilidad': None, # Respuesta para la dimensión 'Comparabilidad'
+                        'Fuente': None, # Respuesta para la dimensión 'Fuente'
+                        'Tipo': None, # Respuesta para la dimensión 'Tipo'
+                        'SBT': None, # Respuesta para la dimensión 'SBT'
+                        'Validación Externa': None, # Respuesta para la dimensión 'Validación Externa'
+                    }
+                }
+
+            return indicadores
+
+        except Exception as e:
+            print(e)
+
+    
+    def get_indicadores_usuario(self) -> dict:
+        try:
+            indicadores = self._get_indicadores()
+            user = os.environ.get("USERNAME")
+            # user = 'daniel'
+            collection = self.database['usuarios']
+            indicadores_dict = collection.find_one({"usuario": user}, {'indicadores':1,"_id": 0})
+
+            if indicadores_dict is not None:
+                for indc in indicadores_dict['indicadores']:
+                    indicadores[indc['numero']]['propio'] = indc['propio']
+                    indicadores[indc['numero']]['mide'] = indc['mide']
+                    indicadores[indc['numero']]['dimensiones'] = indc['dimensiones']
+
+            return indicadores  # Return the user document if found, None otherwise
+
+        except Exception as e:
+            print(e)
+
+
+    def set_indicadores(self, indicadores):
+        try:
+            usuario = os.environ.get("USERNAME")
+
+            collection = self.database['usuarios']
+
+            document_to_update = {"usuario": usuario}
+
+            new_respuestas = {"$set" : {"indicadores": indicadores}}
+
+            result = collection.update_one(document_to_update, new_respuestas)
+            return True
+
+        except Exception as e:
+            print(e)
+
+# ----------------------------------------------------------------------------------
 
 # ---------------- INDUSTRIAS, SECTORES, DEPARTAMENTOS & MUNICIPIOS ----------------
     

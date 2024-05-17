@@ -1,5 +1,4 @@
 button:disabled,
 button[disabled]{
     cursor: no-drop;
-    
 }
