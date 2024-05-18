@@ -175,8 +175,6 @@ class MongoDB:
     def get_respuestas(self) -> dict:
         try:
             user = os.environ.get("USERNAME")
-            # if user == None:
-            #     user = "daniel"
             collection = self.database['usuarios']
             usu_dict = collection.find_one({"usuario": user}, {'respuestas':1,"_id": 0})
         
@@ -267,8 +265,7 @@ class MongoDB:
     def get_indicadores_usuario(self) -> dict:
         try:
             indicadores = self._get_indicadores()
-            # user = os.environ.get("USERNAME")
-            user = 'daniel'
+            user = os.environ.get("USERNAME")
             collection = self.database['usuarios']
             indicadores_dict = collection.find_one({"usuario": user}, {'indicadores':1,"_id": 0})
 
@@ -318,8 +315,7 @@ class MongoDB:
     def set_indicadores(self, indicadores):
         try:
             usuario = os.environ.get("USERNAME")
-            usuario = 'daniel'
-            
+
             collection = self.database['usuarios']
 
             document_to_update = {"usuario": usuario}
