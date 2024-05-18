@@ -63,6 +63,7 @@ def iniciar_sesion(usuario, contrasena, n_clicks):
     usuario_valido = mongo.iniciar_sesion(usuario=usuario, contrasena=contrasena)
 
     if usuario_valido:
-        return '/introduccion',''
+        return '/madurez', ''
+        # return '/introduccion',''
     else:
         return '/','Usuario o Contraseña incorrecta'

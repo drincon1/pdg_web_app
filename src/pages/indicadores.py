@@ -195,7 +195,6 @@ def callback_display_dimensiones(opc_sele):
 def update_dimension_indicador(opc_sele):
     ctx = dash.callback_context
     dict_respuesta = ctx.triggered[0]
-    print(ctx.triggered)
     if dict_respuesta['value'] is None:
         raise PreventUpdate
     

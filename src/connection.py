@@ -284,6 +284,36 @@ class MongoDB:
         except Exception as e:
             print(e)
 
+    def get_indicadores_df(self):
+        try:
+            df_indicadores = pd.DataFrame()
+            indicadores_dict = self.get_indicadores_usuario()
+            for key in indicadores_dict:
+                if indicadores_dict[key]['mide'] is not None:
+                    indicador = indicadores_dict[key]
+                    dimensiones = indicadores_dict[key]['dimensiones']
+                    data = {
+                        'numero': key,
+                        'nombre': indicador['nombre'],
+                        'propio': indicador['propio'],
+                        'mide': indicador['mide'],
+                        'categoria': indicador['categoria'],
+                        'Granularidad': dimensiones['Granularidad'],
+                        'Frecuencia': dimensiones['Frecuencia'],
+                        'Comparabilidad': dimensiones['Comparabilidad'],
+                        'Fuente': dimensiones['Fuente'],
+                        'Tipo': dimensiones['Tipo'],
+                        'SBT': dimensiones['SBT'],
+                    }
+
+                    df_temp = pd.DataFrame(data,index=[0])
+                    df_indicadores = pd.concat([df_indicadores, df_temp], ignore_index=False)
+
+            return df_indicadores
+
+        except Exception as e:
+            print(e)    
+        
 
     def set_indicadores(self, indicadores):
         try:

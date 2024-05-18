@@ -18,6 +18,8 @@ dash.register_page(__name__)
 """ ---------------- ATRIBUTOS ---------------- """
 df_dimensiones = pd.DataFrame()
 
+df_indicadores = pd.DataFrame()
+
 # Niveles y sus respectivos minimos y máximos para determinar el nivel
 niveles:dict = {
     'Comenzando el camino': {'puntaje_min': 0, 'puntaje_max': 30},
@@ -53,6 +55,9 @@ def definir_nivel():
         if puntaje_min <= puntos_total <= puntaje_max:
             nivel = level
 
+def get_indicadores():
+    global df_indicadores
+    df_indicadores = mongo.get_indicadores_df()
 """ ------------------------------------------- """
 
 """ ---------------- CALLBACKS ---------------- """
@@ -68,6 +73,7 @@ def definir_nivel():
 def get_puntos_por_dimension(children):
     global df_dimensiones, niveles, nivel, puntos_total
     definir_nivel()
+    get_indicadores()
 
     # Dimension con mejor porcentaje de puntos
     porcentaje_max = df_dimensiones['porcentaje_usuario'].max()
@@ -102,6 +108,54 @@ def get_info_dimension_seleccionada(dimension):
 
 
     return [round(puntos_dimension,2)],[f"{round(porcentage_dimension,2)}%"], [definicion], [dimension]
+
+@callback(
+    [Output('sunburst-indicadores','figure'),
+     Output('alert-sunburst','children'),
+     Output('alert-sunburst','is_open')],
+    Input('dropdown-sunburst','value')
+)
+def set_sunburst(columnas):
+    try:
+        global df_indicadores
+
+        if df_indicadores.shape[0] == 0:
+            return {}, ["No se seleccionarion indicadores"], True
+        
+        columnas_path = []
+        if isinstance(columnas, str):
+            columnas_path.append(columnas)
+        else:
+            columnas_path = columnas
+        
+        figure = px.sunburst(data_frame=df_indicadores, path=columnas_path, maxdepth=3)
+
+        return figure, [""], False
+    
+
+    except Exception as e:
+        return {}, ["Esa combinación no genera una gráfica posible"], True
+
+
+@callback(
+    [Output('pie-chart-indicadores','figure'),
+     Output('label-numero-indicadores','children')],   
+    Input('dropdown-dimension-indicador','value')
+)
+def get_dimension_indicador(dimension):
+    global df_indicadores
+
+    if df_indicadores.shape[0] == 0 or dimension is None:
+        return {}, ["No hay indicadores disponibles"]
+
+    df_indc_dimension = df_indicadores[dimension]
+
+    df_indc_dimension = df_indc_dimension.dropna()
+
+    figure = px.pie(df_indc_dimension, names=dimension, title=f'Resultados para el componente {dimension}')
+
+    return figure, [f"Número de indicadores con respuestas: {df_indc_dimension.shape[0]}"]
+
 """ -------------------------------------------- """
 
 """ ---------------- COMPONENTS ---------------- """
@@ -223,6 +277,37 @@ layout = dbc.Container([
                 ), className="text-center m-4", color="info"
             )
         ],width=5)
-    ], justify="evenly")
+    ], justify="evenly"),
+    # Seccion de Indicadores
+    dbc.Row([
+        dbc.Col([
+            html.Hr(),
+            html.H2("Resultados de sus indicadores", className="text-center"),
+        ], width=12),
+    ]),
+    # Sunburst + Pie Chart
+    dbc.Row([
+        # Sunburst
+        dbc.Col([
+            html.Label("Organización de los indicadores",id="label-organizacion-indicadores"),
+            dbc.Alert(id="alert-sunburst", color="warning", is_open=False),
+            dcc.Dropdown(id="dropdown-sunburst", options=['numero', 'nombre', 'mide', 'categoria', 'Granularidad','Frecuencia', 'Comparabilidad', 'Fuente', 'Tipo', 'SBT'], value="categoria", multi=True),
+            dcc.Graph(
+                id='sunburst-indicadores',
+                figure={},
+            ),
+        ], width=5),
+
+        # Pie Chart
+        dbc.Col([
+            html.Label("Escoja el componente de calificación de indicadores que quiera analizar"),
+            dcc.Dropdown(id="dropdown-dimension-indicador",options=['Granularidad','Frecuencia','Comparabilidad','Fuente','Tipo','SBT'], value='Granularidad'),
+            html.Label(id='label-numero-indicadores', style={'margin-top':'10px'}),
+            dcc.Graph(
+                id='pie-chart-indicadores',
+                figure={},
+            ),
+        ], width=5)
+    ],justify="evenly"),
 ],fluid=True)
 """ ----------------------------------------- """

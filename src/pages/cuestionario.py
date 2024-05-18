@@ -393,7 +393,7 @@ def guardar_respuesta(value):
             puntos = get_puntos_pregunta_hija(hija=hija, respuesta=respuesta)
             
             respuestas[num_pregunta_hija] = {'numero': num_pregunta_hija, 'respuesta': respuesta, 'puntos': puntos, 'dimension': hija['dimension']}
-            print(respuestas)
+
             display_final.append(display_pregunta_hija(hija))
 
             # return display_pregunta_hija(hija)
