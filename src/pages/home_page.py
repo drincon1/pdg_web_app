@@ -13,7 +13,7 @@ layout = html.Div(children=[
     html.Div(className="background", children=[
         html.Div(className="home-page", children=[
             html.Div(className="title-buttons", children=[
-                html.H2(className="home-title", children="Bienvenido"),
+                html.P(className="home-title", children="Autodiagnóstico empresarial sobre el uso del agua"),
                 html.Div(className="home-login", children=[
                     html.Label("Usuario"),
                     dcc.Input(id='input-usuario'),
@@ -63,6 +63,7 @@ def iniciar_sesion(usuario, contrasena, n_clicks):
     usuario_valido = mongo.iniciar_sesion(usuario=usuario, contrasena=contrasena)
 
     if usuario_valido:
-        return '/cuestionario',''
+        return '/madurez', ''
+        # return '/introduccion',''
     else:
         return '/','Usuario o Contraseña incorrecta'
