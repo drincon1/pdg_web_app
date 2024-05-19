@@ -272,7 +272,11 @@ def anterior_indicador(num_pregunta,n_clicks):
     return display_indicador(str(num_pregunta-1)),[],num_pregunta-1    
 
 @callback(
-        Input('btn-guardar-indicadores','n_clicks')
+        [Output('alerta-indicadores-guardados','children'),
+        Output('alerta-indicadores-guardados','is_open'),
+        Output('alerta-indicadores-guardados','duration')],
+        Input('btn-guardar-indicadores','n_clicks'),
+        prevent_initial_call = True
 )
 def guardar_indicadores(n_clicks):
     global indicadores
@@ -287,6 +291,8 @@ def guardar_indicadores(n_clicks):
             'dimensiones': indicadores[numero]['dimensiones'],
         })
     mongo.set_indicadores(indicadores=indicadores_guardar)
+
+    return ('Respuestas guardadas con éxito!'), True, 2000
 
 @callback(
     Output('url_nuevos_indicadores', 'pathname'),
@@ -349,6 +355,7 @@ layout = html.Div(children=[
             html.Div(className='seccion-terminar', children=[
                 html.Button("Terminar",id='btn-terminar-indicadores', disabled=True, className='btn-cuestionario'),
                 dcc.Location(id='url_nuevos_indicadores', refresh=True),
+                dbc.Alert(id="alerta-indicadores-guardados", is_open=False, style={'margin-top': '10px'})
             ]),
         ])
     ])

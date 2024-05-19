@@ -5,6 +5,7 @@ import pandas as pd
 import dash
 from dash import html, callback, Input, State, Output, dcc, ALL
 from dash.exceptions import PreventUpdate
+import dash_bootstrap_components as dbc
 from connection import MongoDB
 import json
 
@@ -52,6 +53,7 @@ layout = html.Div(children=[
             html.Div(className='seccion-terminar', children=[
                 html.Button("Terminar",id='btn-terminar', disabled=True, className='btn-cuestionario'),
                 dcc.Location(id='url_indicadores', refresh=True),
+                dbc.Alert(id="alerta-respuestas-guardadas", is_open=False, style={'margin-top': '10px'})
             ]),
         ])
     ])
@@ -324,10 +326,16 @@ def obtener_primera_pregunta(children):
     return obtener_pregunta('1')
 
 @callback(
-    Input('btn-guardar-respuestas','n_clicks')
+    [Output('alerta-respuestas-guardadas','children'),
+     Output('alerta-respuestas-guardadas','is_open'),
+     Output('alerta-respuestas-guardadas','duration')],
+    Input('btn-guardar-respuestas','n_clicks'),
+    prevent_initial_call=True
 )
 def upload_respuestas(n_clicks):
     update_respuestas()
+
+    return ('Respuestas guardadas con éxito!'), True, 2000
 
 @callback(
     Input('select-sector','value')
