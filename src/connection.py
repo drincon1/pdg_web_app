@@ -89,8 +89,7 @@ class MongoDB:
                     'departamentos': [],
                     'municipios': [],
                     'respuestas': [],
-                    'indicadores': [],
-                    'ssee': []
+                    'indicadores': []
                 }
 
                 # Inserting the student data into the 'students' collection and obtaining the inserted ID
@@ -227,6 +226,15 @@ class MongoDB:
                             'SBT': "", # Respuesta para la dimensión 'SBT'
                             'Validación Externa': "", # Respuesta para la dimensión 'Validación Externa'
                         }
+                        ssee: {
+                            numero: { # numero del servicio ecosistemico j asociado al indicador i
+                                nombre: '', # nombre del servicio ecosistemico j asociado al indicador i
+                                dependencia:'', # [BAJA, MEDIA, ALTA]
+                                impacto: '', # [POSITIVO, NEGATIVO]
+                                funciones: [], # funciones asociadas al servicio ecositemico j del indicador i
+                            }, 
+                        }
+                        ]
                     }
                 }
             """
@@ -255,6 +263,19 @@ class MongoDB:
                         'Validación Externa': None, # Respuesta para la dimensión 'Validación Externa'
                     }
                 }
+                # ssee_dict será un diccionario de diccionarios donde la llave del diccionario principal sera el numero del ssee
+                ssee_dict = {}
+                # indicador['ssee']: lista de diccionarios, donde cada diccionario contiene la informacion del ssee asociado al indicador
+                # ssee: diccionario
+                for ssee in indicador['ssee']:
+                    ssee_dict[ssee['numero']] = {
+                        'nombre': ssee['numero'],
+                        'funciones': ssee['funciones'],
+                        'dependencia': None,
+                        'impacto': None,
+                    }
+
+                indicadores[indicador['numero']]['ssee'] = ssee_dict
 
             return indicadores
 
@@ -263,6 +284,9 @@ class MongoDB:
 
     
     def get_indicadores_usuario(self) -> dict:
+        """
+            JOIN entre la coleccion 'indicadores' y la coleccion 'usuarios' 
+        """
         try:
             indicadores = self._get_indicadores()
             user = os.environ.get("USERNAME")
@@ -275,11 +299,55 @@ class MongoDB:
                         indicadores[indc['numero']]['propio'] = indc['propio']
                         indicadores[indc['numero']]['mide'] = indc['mide']
                         indicadores[indc['numero']]['dimensiones'] = indc['dimensiones']
+                        # TODO: AGREGAR PARA CADA SSEE DE CADA INDICADOR LOS VALORES DE DEPENDENCIA E IMPACTO QUE YA RESPONDIO EL USUARIO
+                        print(indc['ssee'])
 
             return indicadores  # Return the user document if found, None otherwise
 
         except Exception as e:
             print(e)
+    
+    def get_ssee_usuario(self) -> list:
+        """ JOIN entre los indicadores y los indicadores escogidos por el usuario para determinar cuales ssee se deben 
+        evaluar (dependencia e impacto)
+
+        Returns:
+            list: lista de diccionarios donde cada diccionario tiene el numero y nombre del servicio ecosistemico a evaluar.
+        """
+
+        # collection.update_many({}, {"$unset": {"indicadores": 1}})
+
+        try:
+            collection_indicadores = self.database['indicadores']
+            indicadores_dict = collection_indicadores.find()
+            temp_dict = {}
+            for i in indicadores_dict:
+                temp_dict[i['numero']] = i
+
+            indicadores_dict = temp_dict
+
+            collection_usuarios = self.database['usuarios']
+            user = os.environ.get("USERNAME")
+            user = 'daniel'
+            usuario_dict = collection_usuarios.find_one({"usuario": user}, {'indicadores':1,"_id": 0})['indicadores']
+            ssee = []
+
+            for indi_usu in usuario_dict:
+                if indi_usu['mide'] == 'SI':
+                    num_indicador = indi_usu['numero']
+                    indicador = indicadores_dict[num_indicador]
+                    # print(indicador)
+                    ssee_indicador = indicador['ssee']
+                    for s in ssee_indicador:
+                        if s not in ssee:
+                            ssee.append(s)
+
+            print(ssee)
+
+
+        except Exception as e:
+            print(e)
+
 
     def get_indicadores_df(self):
         try:
@@ -313,6 +381,14 @@ class MongoDB:
         
 
     def set_indicadores(self, indicadores):
+        """Actualiza los indicadores 
+
+        Args:
+            indicadores (lista): lista de diccioniarios donde cada diccionario representa un indicador
+
+        Returns:
+            bool: True -> si los indicadores fueron actualizados
+        """
         try:
             usuario = os.environ.get("USERNAME")
 

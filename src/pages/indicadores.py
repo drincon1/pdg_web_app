@@ -37,6 +37,15 @@ indicadores: dict = {}
                 'SBT': "", # Respuesta para la dimensión 'SBT'
                 'Validación Externa': "", # Respuesta para la dimensión 'Validación Externa'
             }
+            ssee: {
+                numero: { # numero del servicio ecosistemico j asociado al indicador i
+                    nombre: '', # nombre del servicio ecosistemico j asociado al indicador i
+                    dependencia:'', # [BAJA, MEDIA, ALTA]
+                    impacto: '', # [POSITIVO, NEGATIVO]
+                    funciones: [], # funciones asociadas al servicio ecositemico j del indicador i
+                }, 
+            }
+            ]
         }
     }
 """
@@ -319,13 +328,7 @@ def indicadores_resultados(n_clicks):
     
     return '/nuevos'
 
-""" -------------------------------------------- """
-
-""" ---------------- COMPONENTS ---------------- """
-
-
 """ ---------------------------------------- """
-
 
 """ ---------------- LAYOUT ---------------- """
 layout = html.Div(children=[
