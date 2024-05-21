@@ -53,6 +53,9 @@ markdown = '''
     5. Funciones Ecosistémicas: La empresa podrá ver una visualización de la relación entre indicadores, servicios ecosistémicos y funciones ecosistémicas, para entender la importancia en la relación entre el negocio y el agua y sus servicios ecosistémicos.
     6. Resultados: En este último paso, la empresa podrá saber cuál es su nivel de madurez, su puntaje obtenido, su mejor dimensión, el puntaje y descripción por dimensión y unas gráficas descriptivas para los indicadores escogidos.
 
+    #### Importante
+    Asegúrese de siempre iniciar sesion antes de usar cualquier funcionalidad
+    
 '''
 
 """ ---------------------------------------- """

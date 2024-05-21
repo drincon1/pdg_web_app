@@ -167,6 +167,17 @@ def show_explicacion_madurez(is_open, n_clicks):
     
     return not is_open
 
+@callback(
+    Output('url_back_funciones', 'pathname'),
+    Input('btn-back-funciones', 'n_clicks'),
+    prevent_initial_call=True
+)
+def go_madurez(n_clicks):
+    if n_clicks is None:
+        raise dash.exceptions.PreventUpdate    
+        
+    return '/funciones'
+
 """ -------------------------------------------- """
 
 """ ---------------- COMPONENTS ---------------- """
@@ -193,7 +204,6 @@ modal_explicacion = html.Div([dbc.Modal(
             is_open=False,
         ),
     ])
-
 """ ---------------------------------------- """
 
 
@@ -349,5 +359,11 @@ layout = dbc.Container([
             ),
         ], width=5)
     ],justify="evenly"),
+    dbc.Row([
+        dbc.Col([
+            html.Button("Ir a 'Relaciones'",id='btn-back-funciones', className='btn-cuestionario', style={'margin-left':'50px'}),
+            dcc.Location(id='url_back_funciones', refresh=True),
+        ], width=12)
+    ], justify="end")
 ],fluid=True)
 """ ----------------------------------------- """
