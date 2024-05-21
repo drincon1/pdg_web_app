@@ -120,7 +120,7 @@ def set_sunburst(columnas):
         global df_indicadores
 
         if df_indicadores.shape[0] == 0:
-            return {}, ["No se seleccionarion indicadores"], True
+            return {}, ["No se seleccionaron indicadores"], True
         
         columnas_path = []
         if isinstance(columnas, str):
@@ -156,10 +156,43 @@ def get_dimension_indicador(dimension):
 
     return figure, [f"Número de indicadores con respuestas: {df_indc_dimension.shape[0]}"]
 
+@callback(
+    Output('modal_explicacion','is_open'),
+    State("modal_explicacion", "is_open"),
+    Input('btn-nivels-madurez','n_clicks')
+)
+def show_explicacion_madurez(is_open, n_clicks):
+    if n_clicks is None:
+        raise dash.exceptions.PreventUpdate
+    
+    return not is_open
+
 """ -------------------------------------------- """
 
 """ ---------------- COMPONENTS ---------------- """
 
+modal_explicacion = html.Div([dbc.Modal(
+            [
+                dbc.ModalHeader(dbc.ModalTitle("Modelo de Madurez")),
+                dbc.ModalBody([
+                    dbc.Carousel(
+                        items=[
+                            {"key": "1", "src": "assets/imagenes/niveles/niveles.png"},
+                            {"key": "2", "src": "assets/imagenes/niveles/1-comenzando_el_camino.png"},
+                            {"key": "3", "src": "assets/imagenes/niveles/2-sorteando_desafios.png"},
+                            {"key": "4", "src": "assets/imagenes/niveles/3-avanzando_por_camino.png"},
+                            {"key": "5", "src": "assets/imagenes/niveles/4-liderando_camino.png"},
+                        ],
+                        controls=True,
+                        indicators=False,
+                    )
+                ]),
+            ],
+            id="modal_explicacion",
+            size="lg",
+            is_open=False,
+        ),
+    ])
 
 """ ---------------------------------------- """
 
@@ -220,6 +253,13 @@ layout = dbc.Container([
             )
         ], width=4)
     ]), 
+    # Botones 'Niveles de madurez' + 'Dimensiones'
+    dbc.Row([
+        dbc.Col([
+            dbc.Button('Niveles de madurez', id='btn-nivels-madurez',color="light", style={'margin-left':'25px'}),
+            modal_explicacion
+        ],className="d-flex justify-content-start"),
+    ]),
     # Bar Graph: Porcentaje de puntos por dimensión
     dbc.Row([
         dbc.Col([

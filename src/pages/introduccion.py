@@ -26,6 +26,31 @@ def iniciar_sesion(n_clicks):
 
 """ ------------------------------------------- """
 
+""" ---------------- MARKDOWND ---------------- """
+
+markdown = '''
+    ### Introducción
+
+    ### Objetivos
+    1. Determinar el nivel de madurez a partir de la evaluación de el conocimiento y acciones que tiene la empresa acerca de las dependencias y los impactos sobre el agua.
+    2. Entender, de las dimensiones a evaluar, cuál es la mejor dimensión actualmente que tiene la empresa.
+    3. Exponer a la empresa, según los indicadores que ellos miden, cuáles servicios ecosistémicos y funciones ecosistémicas deberían contemplar en los reportes relacionados al agua.
+
+    ### Funcionamiento
+    Esta herramienta se dividen en 6 pasos que se ejecutan de manera secuencial.
+
+    1. Cuestionario: En este paso la empresa deberá responder un conjunto de preguntas relacionadas a los conocimientos y acciones que actualmente está haciendo la empresa en relación a las dependencias e impactos sobre el agua.
+    2. Indicadores: La empresa deberá seleccionar los indicadores que actualmente estén midiendo o contemplando en reportes relacionados al agua.
+    3. Nuevos indicadores: La empresa podrá ingresar sus propios indicadores, que no encontró en la anterior sección, a la herramienta.
+    4. Servicios Ecosistémicos: La empresa, a partir de los indicadores seleccionados de la herramienta, podrá determinar el nivel de dependencia y el tipo de impacto que tiene sobre los servicios ecosistémicos.
+    5. Funciones Ecosistémicas: La empresa podrá ver una visualización de la relación entre indicadores, servicios ecosistémicos y funciones ecosistémicas, para entender la importancia en la relación entre el negocio y el agua y sus servicios ecosistémicos.
+    6. Resultados: En este último paso, la empresa podrá saber cuál es su nivel de madurez, su puntaje obtenido, su mejor dimensión, el puntaje y descripción por dimensión y unas gráficas descriptivas para los indicadores escogidos.
+
+'''
+
+""" ---------------------------------------- """
+
+
 """ ---------------- LAYOUT ---------------- """
 layout = dbc.Container([
     # Título 
@@ -36,7 +61,7 @@ layout = dbc.Container([
                 className="banner",
                 children=[
                     html.Img(className="water-image", src="assets/imagenes/water-drop.png"),
-                    html.H3("Autodiagnóstico empresarial sobre el uso del agua - Introducción"),
+                    html.H3("Autodiagnóstico empresarial sobre el uso del agua"),
                 ],
             ),
             # html.H1("Autodiagnóstico empresarial sobre el uso del agua",style={'textAlign': 'center'}),
@@ -47,17 +72,8 @@ layout = dbc.Container([
         dbc.Col([
             html.Div([
                 html.H3("Explicación",className="text-center",),
-                dcc.Markdown('''
-                #### Dash and Markdown
-
-                Dash supports [Markdown](http://commonmark.org/help).
-
-                Markdown is a simple way to write and format text.
-                It includes a syntax for things like **bold text** and *italics*,
-                [links](http://commonmark.org/help), inline `code` snippets, lists,
-                quotes, and more.
-                ''', style={'padding-left': '10px'})
-            ], style={'border':'1px solid black', 'height':'500px', 'border-style': 'dotted', 'border-radius': '5px'})
+                dcc.Markdown(markdown, style={'padding-left': '10px'})
+            ], style={'border':'1px solid black',  'border-style': 'dotted', 'border-radius': '5px'})
         ], width=12)
     ],align="center",),
     dbc.Row([

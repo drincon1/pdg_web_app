@@ -34,6 +34,21 @@ layout = html.Div(children=[
             children=[
                 html.Img(className="water-image", src="assets/imagenes/water-drop.png"),
                 html.H3("Autodiagnóstico empresarial sobre el uso del agua - Cuestionario"),
+                dbc.Modal(
+                    [
+                        dbc.ModalHeader(dbc.ModalTitle("Advertencia"), close_button=False),
+                        dbc.ModalBody("Las respuestas NO se guardarán automáticamente. Si quiere guardarlas, debe presionar el botón 'Guardar respuestas'. Al presionar el botón 'Terminar' se guardarán las respuestas, pero se redirigirá al siguiente paso."),
+                        dbc.ModalFooter(
+                            dbc.Button(
+                                "Continuar", id="close-advertencia-cuestionario", className="ms-auto", n_clicks=0
+                            )
+                        ),
+                    ],
+                    id="modal_advertencia-cuestionario",
+                    is_open=True,
+                    keyboard=False,
+                    backdrop="static",
+                ),
             ],
         ),
         html.Div(className="seccion-cuestionario", children=[
@@ -324,6 +339,18 @@ def obtener_primera_pregunta(children):
     get_preguntas()
 
     return obtener_pregunta('1')
+
+
+@callback(
+    Output("modal_advertencia-cuestionario", "is_open"),
+    Input("close-advertencia-cuestionario", "n_clicks"),
+    prevent_initial_call=True
+)
+def toggle_modal(n_clicks):
+    if n_clicks is None:
+        raise dash.exceptions.PreventUpdate    
+
+    return False
 
 @callback(
     [Output('alerta-respuestas-guardadas','children'),

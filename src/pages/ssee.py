@@ -14,13 +14,16 @@ import os
 """ ---------- ATRIBUTOS ---------- """
 mongo = MongoDB()
 
+
 ssee: dict = {}
 """
     ssee: {
-        numero: { # numero del servicio ecosistemico j asociado al indicador i
-            nombre: '', # nombre del servicio ecosistemico j asociado al indicador i
+        indice_display: { # El indice display sirve para facilitar el orden en el display 
+            numero: '', # numero del servicio ecosistemico
+            nombre: '', # nombre del servicio ecosistemico
             dependencia:'', # [BAJA, MEDIA, ALTA]
-            impacto: '', # [POSITIVO, NEGATIVO]
+            impacto: '', # [POSITIVO, NEGATIVO],
+            num_indicador = '', # numero del indicador asociado,
         }, 
     }
 """
@@ -33,42 +36,126 @@ dash.register_page(__name__)
 def get_ssee():
     global ssee
     ssee = mongo.get_ssee_usuario()
+    
+    # ! el siguiente codigo toca borrarlo cuando ya se tenga la info real
+    for s in ssee:
+        ssee[s]['descripcion'] = f'Acá iría la descripción para el servicio ecosistémico {ssee[s]['nombre']}'
+    
+    # ! El siguiente codigo NO se debe borrar
+    # El siguiente codigo cambia el numero del ssee por un indice para poder cambiar entre preguntas sin problemas
+    indice_display = 1
+    ssee_temp = {}
+
+    for s in ssee:
+        ssee_temp[str(indice_display)] = ssee[s]
+        indice_display += 1
+
+    ssee = ssee_temp
+
 
 def display_ssee(num_ssee: str):
-
-
+    global ssee
+    servicio = ssee[num_ssee]
     layout = html.Div([
         dbc.Card([
             dbc.CardHeader('Descripción del SSEE'),
             dbc.CardBody([
-                html.H5('NOMBRE DEL SSEE'),
-                html.P('DESCRIPCION DEL SSEE'),
+                html.H5(servicio['nombre']),
+                html.P(servicio['descripcion']),
             ])
         ], color="light", style={"color":"black"}),
 
         html.P(style={"margin-top":"10px"},children="¿Cuál es el nivel de dependencia de su empresa sobre este servicio ecosistémico?"),
         dcc.RadioItems(
-                id={"type": "opc-ssee-dependencia", "index":1},
+                id={"type": "opc-ssee-dependencia", "index":f'ssee-dependencia-{num_ssee}'},
                 options=['BAJO','MEDIO','ALTO','NS/NR'],
+                value=servicio['dependencia'],
         ),
         html.P(style={"margin-top":"10px"},children="¿Qué tipo de impacto tiene su empresa sobre este servicio ecosistémico?"),
         dcc.RadioItems(
-                id={"type": "opc-ssee-impacto", "index":1},
+                id={"type": "opc-ssee-impacto", "index":f'ssee-impacto-{num_ssee}'},
                 options=['POSITIVO','NEGATIVO','NS/NR'],
+                value=servicio['impacto'],
         )
     ])
 
     return layout
 
+def set_servicios_guardar() -> list:
+    global ssee
+    ssee_guardar: list = []
+    for key in ssee:
+        servicio = ssee[key]
+        ssee_guardar.append({
+            'numero': servicio['numero'], 
+            'nombre': servicio['nombre'], 
+            'dependencia':servicio['dependencia'], 
+            'impacto': servicio['impacto'], 
+            'num_indicador': servicio['num_indicador'],
+        })
+    
+    return ssee_guardar
+
 """ ---------- CALLBACKS ---------- """
 @callback(
-    Output('seccion-ssee','children'),
-    Input('seccion-ssee','children')
+    [Output('seccion-ssee','children'),
+     Output('avance-ssee','max'),
+     Output('modal_no_indicadores','is_open')],
+    Input('background','children')
 )
 def display_primer_ssee(children):
+    global see
     get_ssee()
-    return display_ssee(num_ssee='1')
+    if len(ssee) == 0:
+        return [], 1, True
+    return display_ssee(num_ssee='1'),len(ssee), False
+
+@callback(
+    Output("url_relaciones_ssee", "pathname", allow_duplicate=True),
+    Input("close", "n_clicks"),
+    prevent_initial_call=True
+)
+def toggle_modal(n_clicks):
+    if n_clicks is None:
+        raise dash.exceptions.PreventUpdate    
+
+    return '/funciones'
+
+@callback(
+    Input({'type':'opc-ssee-dependencia','index':ALL}, 'value')
+)
+def update_dependencia_ssee(opc_sele):
+    ctx = dash.callback_context
+    dict_respuesta = ctx.triggered[0]
+
+    if dict_respuesta['value'] is None:
+        raise PreventUpdate
     
+    global ssee
+
+    indice = json.loads(dict_respuesta['prop_id'].split('.')[0])['index'].split('-')
+    num_indicador = str(indice[2])
+    nivel = dict_respuesta['value']
+
+    ssee[num_indicador]['dependencia'] = nivel
+
+@callback(
+    Input({'type':'opc-ssee-impacto','index':ALL}, 'value')
+)
+def update_impacto_ssee(opc_sele):
+    ctx = dash.callback_context
+    dict_respuesta = ctx.triggered[0]
+
+    if dict_respuesta['value'] is None:
+        raise PreventUpdate
+    
+    global ssee
+
+    indice = json.loads(dict_respuesta['prop_id'].split('.')[0])['index'].split('-')
+    num_indicador = str(indice[2])
+    tipo = dict_respuesta['value']
+
+    ssee[num_indicador]['impacto'] = tipo
 
 # CALLBACK: ACTUALIZAR PREGUNTA
 @callback(
@@ -129,6 +216,8 @@ def anterior_ssee(num_pregunta,n_clicks):
         prevent_initial_call = True
 )
 def guardar_ssee(n_clicks):
+    mongo.update_servicios(servicios=set_servicios_guardar())
+
     return ('Respuestas guardadas con éxito!'), True, 2000
 
 
@@ -141,7 +230,20 @@ def go_ssee(n_clicks):
     if n_clicks is None:
         raise dash.exceptions.PreventUpdate    
 
+    mongo.update_servicios(servicios=set_servicios_guardar())
+    
     return '/funciones'
+
+@callback(
+    Output("modal_advertencia-ssee", "is_open"),
+    Input("close-advertencia-ssee", "n_clicks"),
+    prevent_initial_call=True
+)
+def toggle_modal(n_clicks):
+    if n_clicks is None:
+        raise dash.exceptions.PreventUpdate    
+
+    return False
 
 
 """ ---------- LAYOUT ---------- """
@@ -153,12 +255,42 @@ layout = html.Div(children=[
             children=[
                 html.Img(className="water-image", src="assets/imagenes/water-drop.png"),
                 html.H3("Autodiagnóstico empresarial sobre el uso del agua - Servicios Ecosistémicos relacionados a los indicadores"),
+                dbc.Modal(
+                    [
+                        dbc.ModalHeader(dbc.ModalTitle("Advertencia"), close_button=False),
+                        dbc.ModalBody("Usted no ha seleccionado ningun tipo de indicador. Será redirigido al siguiente paso"),
+                        dbc.ModalFooter(
+                            dbc.Button(
+                                "Continuar", id="close", className="ms-auto", n_clicks=0
+                            )
+                        ),
+                    ],
+                    id="modal_no_indicadores",
+                    is_open=False,
+                    keyboard=False,
+                    backdrop="static",
+                ),
+                dbc.Modal(
+                    [
+                        dbc.ModalHeader(dbc.ModalTitle("Advertencia"), close_button=False),
+                        dbc.ModalBody("Las respuestas NO se guardarán automáticamente. Si quiere guardarlas, debe presionar el botón 'Guardar respuestas'. Al presionar el botón 'Terminar' se guardarán las respuestas, pero se redirigirá al siguiente paso."),
+                        dbc.ModalFooter(
+                            dbc.Button(
+                                "Continuar", id="close-advertencia-ssee", className="ms-auto", n_clicks=0
+                            )
+                        ),
+                    ],
+                    id="modal_advertencia-ssee",
+                    is_open=True,
+                    keyboard=False,
+                    backdrop="static",
+                ),
             ],
         ),
         html.Div(className="seccion-cuestionario", children=[
             html.Div(className='seccion-progreso',children=[
                 # Número de servicios ecosistémicos relacionados
-                dcc.Slider(id='avance-ssee',min=1, max=30, step=1, value=1, className="slider"),
+                dcc.Slider(id='avance-ssee',min=1, step=1, value=1, className="slider"),
                 html.Hr()
             ]),
             html.Div(className='seccion-botones', children=[

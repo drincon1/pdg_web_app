@@ -4,6 +4,7 @@ from bson import ObjectId
 import os
 from classes.pregunta import Pregunta
 import pandas as pd
+import traceback
 
 class MongoDB:
 
@@ -89,7 +90,8 @@ class MongoDB:
                     'departamentos': [],
                     'municipios': [],
                     'respuestas': [],
-                    'indicadores': []
+                    'indicadores': [],
+                    'servicios': []
                 }
 
                 # Inserting the student data into the 'students' collection and obtaining the inserted ID
@@ -263,19 +265,19 @@ class MongoDB:
                         'Validación Externa': None, # Respuesta para la dimensión 'Validación Externa'
                     }
                 }
-                # ssee_dict será un diccionario de diccionarios donde la llave del diccionario principal sera el numero del ssee
-                ssee_dict = {}
-                # indicador['ssee']: lista de diccionarios, donde cada diccionario contiene la informacion del ssee asociado al indicador
-                # ssee: diccionario
-                for ssee in indicador['ssee']:
-                    ssee_dict[ssee['numero']] = {
-                        'nombre': ssee['numero'],
-                        'funciones': ssee['funciones'],
-                        'dependencia': None,
-                        'impacto': None,
-                    }
+                # # ssee_dict será un diccionario de diccionarios donde la llave del diccionario principal sera el numero del ssee
+                # ssee_dict = {}
+                # # indicador['ssee']: lista de diccionarios, donde cada diccionario contiene la informacion del ssee asociado al indicador
+                # # ssee: diccionario
+                # for ssee in indicador['ssee']:
+                #     ssee_dict[ssee['numero']] = {
+                #         'nombre': ssee['numero'],
+                #         'funciones': ssee['funciones'],
+                #         'dependencia': None,
+                #         'impacto': None,
+                #     }
 
-                indicadores[indicador['numero']]['ssee'] = ssee_dict
+                # indicadores[indicador['numero']]['ssee'] = ssee_dict
 
             return indicadores
 
@@ -299,23 +301,27 @@ class MongoDB:
                         indicadores[indc['numero']]['propio'] = indc['propio']
                         indicadores[indc['numero']]['mide'] = indc['mide']
                         indicadores[indc['numero']]['dimensiones'] = indc['dimensiones']
-                        # TODO: AGREGAR PARA CADA SSEE DE CADA INDICADOR LOS VALORES DE DEPENDENCIA E IMPACTO QUE YA RESPONDIO EL USUARIO
-                        print(indc['ssee'])
 
             return indicadores  # Return the user document if found, None otherwise
 
         except Exception as e:
             print(e)
     
-    def get_ssee_usuario(self) -> list:
+
+    def _get_dependencia_impacto(self, ssee: list, num_servicio: str):
+        for elemento in ssee:
+            if elemento['numero'] == num_servicio:
+                return elemento['dependencia'],elemento['impacto']
+
+        return None, None
+
+    def get_ssee_usuario(self) -> dict:
         """ JOIN entre los indicadores y los indicadores escogidos por el usuario para determinar cuales ssee se deben 
         evaluar (dependencia e impacto)
 
         Returns:
-            list: lista de diccionarios donde cada diccionario tiene el numero y nombre del servicio ecosistemico a evaluar.
+            dict: dictionario de diccionarios donde cada diccionario tiene el numero del servicio, nombre del servicio ecosistemico a evaluar, el nivel de dependencia, el tipo de impacto y el numero del indicador.
         """
-
-        # collection.update_many({}, {"$unset": {"indicadores": 1}})
 
         try:
             collection_indicadores = self.database['indicadores']
@@ -328,22 +334,44 @@ class MongoDB:
 
             collection_usuarios = self.database['usuarios']
             user = os.environ.get("USERNAME")
-            user = 'daniel'
             usuario_dict = collection_usuarios.find_one({"usuario": user}, {'indicadores':1,"_id": 0})['indicadores']
-            ssee = []
+            ssee_usuario = collection_usuarios.find_one({"usuario": user}, {'servicios':1,"_id": 0})['servicios']
 
+            ssee = {}
+            
             for indi_usu in usuario_dict:
-                if indi_usu['mide'] == 'SI':
+                if indi_usu['mide'] == 'SI' and indi_usu['propio'] == None :
                     num_indicador = indi_usu['numero']
                     indicador = indicadores_dict[num_indicador]
-                    # print(indicador)
-                    ssee_indicador = indicador['ssee']
+                    ssee_indicador:list = indicador['ssee']
+                    # s: dict{'numero': int, 'nombre': ''}
                     for s in ssee_indicador:
-                        if s not in ssee:
-                            ssee.append(s)
+                        num_servicio: str = str(s['numero'])
+                        if num_servicio not in ssee:
+                            ssee[num_servicio] = s
+                            ssee[num_servicio]['numero'] = num_servicio
+                            ssee[num_servicio]['num_indicador'] = num_indicador
+                            dependencia, impacto = self._get_dependencia_impacto(ssee_usuario,num_servicio)
+                            ssee[num_servicio]['dependencia'] = dependencia
+                            ssee[num_servicio]['impacto'] = impacto
 
-            print(ssee)
+            return ssee
+        
+        except Exception as e:
+            print(traceback.format_exc())
 
+
+    def update_servicios(self, servicios):
+        try:
+            usuario = os.environ.get("USERNAME")
+
+            collection = self.database['usuarios']
+
+            document_to_update = {"usuario": usuario}
+
+            new_respuestas = {"$set" : {"servicios": servicios}}
+
+            result = collection.update_one(document_to_update, new_respuestas)
 
         except Exception as e:
             print(e)
@@ -354,7 +382,8 @@ class MongoDB:
             df_indicadores = pd.DataFrame()
             indicadores_dict = self.get_indicadores_usuario()
             for key in indicadores_dict:
-                if indicadores_dict[key]['mide'] is not None:
+                # if indicadores_dict[key]['mide'] is not None:
+                if indicadores_dict[key]['mide'] == 'SI':
                     indicador = indicadores_dict[key]
                     dimensiones = indicadores_dict[key]['dimensiones']
                     data = {
@@ -391,7 +420,6 @@ class MongoDB:
         """
         try:
             usuario = os.environ.get("USERNAME")
-
             collection = self.database['usuarios']
 
             document_to_update = {"usuario": usuario}
@@ -403,6 +431,89 @@ class MongoDB:
 
         except Exception as e:
             print(e)
+    
+
+    # ! Metodo temporal hasta tener la informacion real
+    def update_servicios_funciones(self):
+        try:
+            collection = self.database['indicadores']
+            indicadores_dict = collection.find()
+            
+            for indicador in indicadores_dict:
+                servicios = indicador['ssee']
+                for i, servicio in enumerate(servicios):
+                    num_servicio = servicio['numero']
+                    funcion_1 = f'funcion {num_servicio}'
+                    funcion_2 = f'funcion {num_servicio + 1}'
+                    funciones = [funcion_1, funcion_2]
+                    
+                    # Update the specific servicio element in the ssee array
+                    result = collection.update_one(
+                        {"_id": indicador["_id"], f"ssee.{i}.numero": num_servicio},
+                        {"$set": {f"ssee.{i}.funciones": funciones}}
+                    )
+
+                    # Optional: Check if the update was successful
+                    if result.matched_count > 0:
+                        print(f"Successfully updated servicio numero {num_servicio} in document {indicador['_id']}.")
+                    else:
+                        print(f"No matching document found for servicio numero {num_servicio} in document {indicador['_id']}.")
+
+        except Exception as e:
+            print(e)
+
+    def get_indicadores_sankey(self) -> pd.DataFrame:
+        try:
+            collection = self.database['indicadores']
+            indicadores_dict = collection.find()
+
+            df_indicadores = pd.DataFrame()
+
+            for indicador in indicadores_dict:
+                servicios: list = indicador['ssee']
+                for servicio in servicios:
+                    # servicio es un dict
+                    funciones: list = servicio['funciones']
+                    for funcion in funciones:
+                        data = {
+                            'numero': indicador['numero'],
+                            'indicador': indicador['nombre'],
+                            'servicio': servicio['nombre'],
+                            'funcion': funcion
+                        }
+                        df_temp = pd.DataFrame(data,index=[0])
+                        df_indicadores = pd.concat([df_indicadores, df_temp], ignore_index=False)
+                        
+            return df_indicadores
+
+        except Exception as e:
+            print(e)
+    
+    def get_indicadores_seleccionados_sankey(self):
+        try:
+            user = os.environ.get("USERNAME")
+            collection = self.database['usuarios']
+            servicios_dict = collection.find_one({"usuario": user}, {'servicios':1,"_id": 0})
+
+            df_indicadores = self.get_indicadores_sankey()
+
+            if servicios_dict is not None:
+                lista_indicadores = []
+                servicios_list = servicios_dict['servicios']
+                for srv in servicios_list:
+                    if srv['dependencia'] != 'NS/NR' or srv['impacto'] != 'NS/NR':
+                        num_indicador = srv['num_indicador']
+                        if num_indicador not in lista_indicadores:
+                            lista_indicadores.append(num_indicador)
+
+                indicadores_seleccionados = df_indicadores['numero'].isin(lista_indicadores)
+                df_sankey = df_indicadores[indicadores_seleccionados]
+
+            return df_sankey
+
+        except Exception as e:
+            print(e)
+    
 
 # ----------------------------------------------------------------------------------
 
