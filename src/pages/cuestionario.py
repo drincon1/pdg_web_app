@@ -7,6 +7,7 @@ from dash import html, callback, Input, State, Output, dcc, ALL
 from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 from connection import MongoDB
+from components.sesion_warning import create_no_user_warning
 import json
 
 """ ---------------- ATRIBUTOS ---------------- """
@@ -28,6 +29,7 @@ dash.register_page(__name__)
 
 layout = html.Div(children=[
     html.Div(className="background", id='background', children=[
+        create_no_user_warning('url'),
         html.Div(
             id="banner",
             className="banner",
@@ -53,7 +55,7 @@ layout = html.Div(children=[
         ),
         html.Div(className="seccion-cuestionario", children=[
             html.Div(className='seccion-progreso',children=[
-                dcc.Slider(id='avance-preguntas',min=1, max=41, step=1, value=1, className="slider"),
+                dcc.Slider(id='avance-preguntas',min=1, max=45, step=1, value=1, className="slider"),
                 html.Hr()
             ]),
             html.Div(className='seccion-botones', children=[
@@ -545,7 +547,7 @@ def guardar_respuesta(value):
     prevent_initial_call=True
 )
 def actualizar_pregunta(numero_pregunta):
-    if numero_pregunta == 41:
+    if numero_pregunta == 45:
         return obtener_pregunta(str(numero_pregunta)), [], True, False, False
     if numero_pregunta == 1:
         return obtener_pregunta(str(numero_pregunta)), [], False, True, True
@@ -565,7 +567,7 @@ def actualizar_pregunta(numero_pregunta):
 def siguiente_pregunta(num_pregunta,n_clicks):
     if n_clicks is None:
         raise PreventUpdate
-    if num_pregunta == 40:
+    if num_pregunta == 44:
          return obtener_pregunta(str(num_pregunta+1)),num_pregunta+1, [], True, False
     return obtener_pregunta(str(num_pregunta+1)),num_pregunta+1, [], False, True
 
@@ -597,7 +599,7 @@ def indicadores_ssee(n_clicks):
     update_respuestas()
     
     global respuestas
-    pregunta_indicadores = "41"
+    pregunta_indicadores = "45"
     
     if pregunta_indicadores in respuestas.keys() and respuestas[pregunta_indicadores]['respuesta'] == 'SI':
         return '/indicadores'
