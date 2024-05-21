@@ -4,6 +4,7 @@ import dash
 from dash import html, callback, Input, State, Output, dcc, ALL
 from dash.exceptions import PreventUpdate
 from connection import MongoDB
+from components import referencias
 import json
 import dash_bootstrap_components as dbc
 import pandas as pd
@@ -24,7 +25,36 @@ def iniciar_sesion(n_clicks):
 
     return '/cuestionario'
 
+@callback(
+    Output("modal-referencias", "is_open"),
+    Input("btn-referencias", "n_clicks"),
+    State("modal-referencias", "is_open"),
+)
+def toggle_modal(n1, is_open):
+    if n1:
+        return not is_open
+    return is_open
+
+
+""" -------------------------------------------- """
+
+""" ---------------- COMPONENTS ---------------- """
+
+model_referencias = html.Div(dbc.Modal(
+    [
+        dbc.ModalHeader(dbc.ModalTitle("Referencias")),
+        dbc.ModalBody([
+            html.Div("A continuación podrá encontrar la lista de referencias que fueron utilizadas para crear esta herramientas. Estas referencias incluyen la creación del modelo de madurez, preguntas y la selección de dimensiones,servicios ecosistémicos y funciones ecosistémicas"),
+            html.Div(referencias.markdown_referencias)
+        ]),
+    ],
+    id="modal-referencias",
+    size="xl",
+    is_open=False,
+),)
+
 """ ------------------------------------------- """
+
 
 """ ---------------- MARKDOWND ---------------- """
 
@@ -88,9 +118,11 @@ layout = dbc.Container([
     ],align="center",),
     dbc.Row([
         dbc.Col([
+            model_referencias,
+            dbc.Button("Referencias", id='btn-referencias', color="light", style={'margin-top':'10px', 'margin-right': '50px'}),
             dbc.Button("Continuar",id='btn-continuar',className="primary",style={'margin-top':'10px'}),
             dcc.Location(id='url-cuestionario', refresh=True),
-        ], className="d-flex justify-content-end")
+        ], className="d-flex justify-content-end", width=12)
     ])
 
 ],fluid=True)
