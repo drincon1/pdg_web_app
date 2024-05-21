@@ -37,10 +37,6 @@ def get_ssee():
     global ssee
     ssee = mongo.get_ssee_usuario()
     
-    # ! el siguiente codigo toca borrarlo cuando ya se tenga la info real
-    for s in ssee:
-        ssee[s]['descripcion'] = f"Acá iría la descripción para el servicio ecosistémico {ssee[s]['nombre']}"
-    
     # ! El siguiente codigo NO se debe borrar
     # El siguiente codigo cambia el numero del ssee por un indice para poder cambiar entre preguntas sin problemas
     indice_display = 1
@@ -60,7 +56,8 @@ def display_ssee(num_ssee: str):
         dbc.Card([
             dbc.CardHeader('Descripción del SSEE'),
             dbc.CardBody([
-                html.H5(servicio['nombre']),
+                html.H4(servicio['nombre']),
+                html.H6(servicio['tipo']),
                 html.P(servicio['descripcion']),
             ])
         ], color="light", style={"color":"black"}),

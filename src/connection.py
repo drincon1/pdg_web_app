@@ -346,14 +346,20 @@ class MongoDB:
                     ssee_indicador:list = indicador['ssee']
                     # s: dict{'numero': int, 'nombre': ''}
                     for s in ssee_indicador:
-                        num_servicio: str = str(s['numero'])
-                        if num_servicio not in ssee:
-                            ssee[num_servicio] = s
-                            ssee[num_servicio]['numero'] = num_servicio
-                            ssee[num_servicio]['num_indicador'] = num_indicador
-                            dependencia, impacto = self._get_dependencia_impacto(ssee_usuario,num_servicio)
-                            ssee[num_servicio]['dependencia'] = dependencia
-                            ssee[num_servicio]['impacto'] = impacto
+                        if s['numero'] is not None:
+                            num_servicio: str = str(s['numero'])
+                            if num_servicio not in ssee:
+                                ssee[num_servicio] = s
+                                ssee[num_servicio]['nombre'] = s['nombre']
+                                ssee[num_servicio]['numero'] = num_servicio
+                                ssee[num_servicio]['num_indicador'] = num_indicador
+                                ssee[num_servicio]['tipo'] = s['tipo']
+                                ssee[num_servicio]['descripcion'] = s['descripcion']
+                                ssee[num_servicio]['funcion'] = s['funcion']
+                                ssee[num_servicio]['proceso_ecologico'] = s['proceso_ecologico']
+                                dependencia, impacto = self._get_dependencia_impacto(ssee_usuario,num_servicio)
+                                ssee[num_servicio]['dependencia'] = dependencia
+                                ssee[num_servicio]['impacto'] = impacto
 
             return ssee
         
@@ -364,7 +370,6 @@ class MongoDB:
     def update_servicios(self, servicios):
         try:
             usuario = os.environ.get("USERNAME")
-
             collection = self.database['usuarios']
 
             document_to_update = {"usuario": usuario}
@@ -472,14 +477,14 @@ class MongoDB:
             for indicador in indicadores_dict:
                 servicios: list = indicador['ssee']
                 for servicio in servicios:
-                    # servicio es un dict
-                    funciones: list = servicio['funciones']
-                    for funcion in funciones:
+                    if servicio['numero'] is not None:
+                        # servicio es un dict
                         data = {
                             'numero': indicador['numero'],
                             'indicador': indicador['nombre'],
                             'servicio': servicio['nombre'],
-                            'funcion': funcion
+                            'funcion': servicio['funcion'],
+                            'proceso_ecologico': servicio['proceso_ecologico']
                         }
                         df_temp = pd.DataFrame(data,index=[0])
                         df_indicadores = pd.concat([df_indicadores, df_temp], ignore_index=False)

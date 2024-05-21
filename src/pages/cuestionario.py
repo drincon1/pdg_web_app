@@ -7,7 +7,6 @@ from dash import html, callback, Input, State, Output, dcc, ALL
 from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 from connection import MongoDB
-from components.sesion_warning import create_no_user_warning
 import json
 
 """ ---------------- ATRIBUTOS ---------------- """
@@ -29,7 +28,6 @@ dash.register_page(__name__)
 
 layout = html.Div(children=[
     html.Div(className="background", id='background', children=[
-        create_no_user_warning('url'),
         html.Div(
             id="banner",
             className="banner",
