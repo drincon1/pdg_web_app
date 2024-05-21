@@ -30,6 +30,13 @@ def iniciar_sesion(n_clicks):
 
 markdown = '''
     ### Introducción
+    A través de una serie de preguntas, se buscará determinar el nivel de madurez de la empresa con respecto a las dependencias e impactos que tiene sobre el agua.
+    El nivel de madurez estará determinado por siete dimensiones diferentes (Contexto de la organización, Liderazgo, Planificación, Soporte, Operación, Evaluación del desempeño, Mejora).
+    Cada una de estas dimensiones tendrá un número de puntos que se podrán obtener respondiendo las preguntas. Luego, ponderando las dimensiones por su importancia dada por expertos,
+    se obtendrá el total de puntos y así su nivel de madurez ((1) Comenzando el camino, (2) Sorteando desafíos del camino, (3) Avanzando por el camino, y (4) Liderando el camino)
+    
+    Adicionalmente, se podrá determinar cuales indicadores la empresa está midiendo o contemplando y cuales debería medir/contemplar. De esta manera, se podrá relacionar con servicios ecosistémicos
+    en específico. Posteriormente, se relacionará estos servicios ecosistémicos con sus funciones ecosistémicas, permitiendo así relacionar el negocio con el agua y sus componentes. 
 
     ### Objetivos
     1. Determinar el nivel de madurez a partir de la evaluación de el conocimiento y acciones que tiene la empresa acerca de las dependencias y los impactos sobre el agua.
@@ -37,9 +44,9 @@ markdown = '''
     3. Exponer a la empresa, según los indicadores que ellos miden, cuáles servicios ecosistémicos y funciones ecosistémicas deberían contemplar en los reportes relacionados al agua.
 
     ### Funcionamiento
-    Esta herramienta se dividen en 6 pasos que se ejecutan de manera secuencial.
+    Esta herramienta se dividen en 6 pasos.
 
-    1. Cuestionario: En este paso la empresa deberá responder un conjunto de preguntas relacionadas a los conocimientos y acciones que actualmente está haciendo la empresa en relación a las dependencias e impactos sobre el agua.
+    1. Cuestionario: En este paso la empresa deberá responder un conjunto de preguntas relacionadas a los conocimientos y acciones que actualmente está haciendo en relación a las dependencias e impactos sobre el agua.
     2. Indicadores: La empresa deberá seleccionar los indicadores que actualmente estén midiendo o contemplando en reportes relacionados al agua.
     3. Nuevos indicadores: La empresa podrá ingresar sus propios indicadores, que no encontró en la anterior sección, a la herramienta.
     4. Servicios Ecosistémicos: La empresa, a partir de los indicadores seleccionados de la herramienta, podrá determinar el nivel de dependencia y el tipo de impacto que tiene sobre los servicios ecosistémicos.

@@ -39,7 +39,7 @@ def get_ssee():
     
     # ! el siguiente codigo toca borrarlo cuando ya se tenga la info real
     for s in ssee:
-        ssee[s]['descripcion'] = f'Acá iría la descripción para el servicio ecosistémico {ssee[s]['nombre']}'
+        ssee[s]['descripcion'] = f"Acá iría la descripción para el servicio ecosistémico {ssee[s]['nombre']}"
     
     # ! El siguiente codigo NO se debe borrar
     # El siguiente codigo cambia el numero del ssee por un indice para poder cambiar entre preguntas sin problemas
