@@ -53,6 +53,7 @@ layout = html.Div(children=[
         ),
         html.Div(className="seccion-cuestionario", children=[
             html.Div(className='seccion-progreso',children=[
+                dbc.Progress(id='progreso-preguntas', style={'margin-bottom':'20px'}),
                 dcc.Slider(id='avance-preguntas',min=1, max=45, step=1, value=1, className="slider"),
                 html.Hr()
             ]),
@@ -87,6 +88,18 @@ def obtener_pregunta(numero_pregunta: str):
   
     opciones = pregunta['opciones'] # lista de opciones
 
+    dimension = pregunta['dimension']
+
+    dimensiones_colores = {
+        "Contexto de la organización": "primary",
+        "Liderazgo": "secondary",
+        "Planificación": "success",
+        "Soporte": "warning",
+        "Operación": "danger",
+        "Evaluación del desempeño": "info",
+        "Mejora": "dark"
+    }
+
     texto_pregunta_html = html.P(texto_pregunta, className="texto-pregunta")
 
     if tipo == 'SN' or tipo == 'SU':
@@ -95,8 +108,9 @@ def obtener_pregunta(numero_pregunta: str):
             respuesta_escogida = respuestas[pregunta['numero']]['respuesta']
 
         return html.Div([
+            dbc.Badge(dimension, color=dimensiones_colores[dimension], className="me-1", style={'margin-bottom':'10px'}),
             texto_pregunta_html,
-            dcc.RadioItems(
+            dbc.RadioItems(
                 id={"type": "opc-pregunta", "index":numero_pregunta},
                 options=[opc['opcion'] for opc in opciones],
                 value = respuesta_escogida
@@ -112,8 +126,9 @@ def obtener_pregunta(numero_pregunta: str):
             # respuesta_escogida = respuestas[pregunta['numero']]['respuesta']
 
         return html.Div([
+            dbc.Badge(dimension, color=dimensiones_colores[dimension], className="me-1", style={'margin-bottom':'10px'}),
             texto_pregunta_html,
-            dcc.Checklist(
+            dbc.Checklist(
                 id={"type": "opc-pregunta", "index":numero_pregunta},
                 options=[opc['opcion'] for opc in opciones],
                 value = respuesta_escogida
@@ -160,6 +175,23 @@ def display_pregunta_hija(pregunta: dict):
                 # options=[{'label': opcion, 'value': opcion} for opcion in opciones]
             ),
         ])
+
+
+def get_porcentaje_respondido():
+    global respuestas
+    print(respuestas)
+    contador = 0
+    respondidas = []
+    for respuesta in respuestas:
+        if '.' not in respuesta:
+            if respuesta not in respondidas:
+                respondidas.append(respuesta)
+    print(respondidas)
+    contador = len(respondidas)
+    contador = round(contador/45*100,0)
+
+    return f"{str(contador)}%",contador
+
 
 def display_sectores(sectores_industrias: dict):
     sector = None
@@ -239,9 +271,6 @@ def display_municipios():
                 value = municipio,
             )
         ])
-    
-
-
 
 def get_preguntas():
     global preguntas
@@ -408,8 +437,6 @@ def set_departamentos(departamentos):
 def set_municipios(municipios):
     mongo.update_municipios_usuario(municipios)
 
-
-
 @callback(
     Output('seccion-preguntas-hijas','children'),
     Input({'type':'opc-pregunta','index':ALL}, 'value'),
@@ -423,7 +450,6 @@ def guardar_respuesta(value):
 
     if dict_respuesta['value'] is None:
         raise PreventUpdate
-
     # Pregunta hija
     if len(dict_respuesta['prop_id'].split('.')) > 2:
         respuesta = dict_respuesta['value']
@@ -477,7 +503,7 @@ def guardar_respuesta(value):
                 respuestas[num_pregunta] = respuestas_guardar
             
             # return displays_hijas
-
+        
         return display_final
         
 
@@ -577,7 +603,9 @@ def actualizar_pregunta(numero_pregunta):
      Output('avance-preguntas','value',allow_duplicate=True),
      Output('seccion-preguntas-hijas','children',allow_duplicate=True),
      Output('btn-siguiente','disabled',allow_duplicate=True),
-     Output('btn-terminar','disabled',allow_duplicate=True)],
+     Output('btn-terminar','disabled',allow_duplicate=True),
+     Output('progreso-preguntas','label'),
+     Output('progreso-preguntas','value')],
     State('avance-preguntas','value'),
     Input('btn-siguiente','n_clicks'),
     prevent_initial_call=True
@@ -585,10 +613,10 @@ def actualizar_pregunta(numero_pregunta):
 def siguiente_pregunta(num_pregunta,n_clicks):
     if n_clicks is None:
         raise PreventUpdate
+    label, value_progreso = get_porcentaje_respondido()
     if num_pregunta == 44:
-         return obtener_pregunta(str(num_pregunta+1)),num_pregunta+1, [], True, False
-    return obtener_pregunta(str(num_pregunta+1)),num_pregunta+1, [], False, True
-
+         return obtener_pregunta(str(num_pregunta+1)),num_pregunta+1, [], True, False, label, value_progreso
+    return obtener_pregunta(str(num_pregunta+1)),num_pregunta+1, [], False, True, label, value_progreso
 
 @callback(
     [Output('seccion-preguntas','children',allow_duplicate=True),
