@@ -174,8 +174,9 @@ def set_card_gestiones(funcion, switch):
             html.H5('Indicadores'),
             dcc.Markdown(markdown_text),
             html.Hr(),
-            html.H5('¿Qué es una gestión ecosistémica?'),
-            html.P('Definición de gestión ecosistémica'),
+            html.H5("Política Nacional para la Gestión integral de la Biodiversidad y sus Servicios Ecosistémicos"),
+            html.P('La PNGIBSE formulada en el año 2012, plantea un cambio sustancial en la forma de abordar la gestión de la biodiversidad, lo cual se refleja en el desarrollo conceptual y la propuesta técnica que hace.', style={'margin-top':'20px'}),
+            dcc.Markdown('[Ministerio de Ambiente y Desarrollo Sostenible & Instituto Humboldt, 2012] (https://www.minambiente.gov.co/direccion-de-bosques-biodiversidad-y-servicios-ecosistemicos/politica-nacional-para-la-gestion-integral-de-la-biodiversidad-y-sus-servicios-ecosistemicos)', style={'font-size': '14px'}),
             ], style={'color':'black'})
     ])
 
