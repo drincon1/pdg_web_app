@@ -242,6 +242,16 @@ def toggle_modal(n_clicks):
 
     return False
 
+@callback(
+    Output("modal-explicacion-ssee", "is_open"),
+    [Input("btn-explicacion-ssee", "n_clicks"), Input("btn-cerrar-explicacion-ssee", "n_clicks")],
+    [State("modal-explicacion-ssee", "is_open")],
+)
+def toggle_modal(n1, n2, is_open):
+    if n1 or n2:
+        return not is_open
+    return is_open
+
 
 """ ---------- LAYOUT ---------- """
 layout = html.Div(children=[
@@ -292,7 +302,21 @@ layout = html.Div(children=[
             ]),
             html.Div(className='seccion-botones', children=[
                 html.Button("Atrás",id='btn-atras-ssee', className='btn-cuestionario', disabled=True),
-                html.Button("Guardar respuestas",id='btn-guardar-ssee', className='btn-cuestionario'),
+                dbc.Button("Explicación",id='btn-explicacion-ssee', color="info",className='btn-cuestionario'),
+                dbc.Modal(
+                    [
+                        dbc.ModalHeader(dbc.ModalTitle("Servicios Ecosistémicos")),
+                        dbc.ModalBody("A continuación usted podrá seleccionar el nivel de dependencia y el tipo de impacto que tiene sobre los servicios ecosistémicos. Estos servicios fueron seleccionados basados en las respuestas de los indicadores. Es decir, aparecen los servicios ecosistémicos relacionados a los indicadores que su empresa mide o contempla."),
+                        dbc.ModalFooter(
+                            dbc.Button(
+                                "Cerrar", id="btn-cerrar-explicacion-ssee", className="ms-auto", n_clicks=0
+                            )
+                        ),
+                    ],
+                    id="modal-explicacion-ssee",
+                    is_open=False,
+                ),
+                dbc.Button("Guardar respuestas",id='btn-guardar-ssee', color="primary",className='btn-cuestionario'),
                 html.Button("Siguiente",id='btn-siguiente-ssee', className='btn-cuestionario'),
             ]),
             html.Div(className="seccion-preguntas-respuestas", children=[
@@ -300,7 +324,7 @@ layout = html.Div(children=[
                 html.Div(className='seccion-preguntas',id='seccion-ssee'),
             ]),
             html.Div(className='seccion-terminar', children=[
-                html.Button("Terminar",id='btn-terminar-ssee', disabled=True, className='btn-cuestionario'),
+                dbc.Button("Terminar",id='btn-terminar-ssee', color="success", disabled=True, className='btn-cuestionario'),
                 dcc.Location(id='url_relaciones_ssee', refresh=True),
                 dbc.Alert(id="alerta-ssee-guardados", is_open=False, style={'margin-top': '10px'})
             ]),

@@ -30,6 +30,7 @@ def get_indicadores(switch):
     global df_indicadores
     if switch is not None and len(switch) > 0:
         df_indicadores = mongo.get_indicadores_seleccionados_sankey()
+        print(df_indicadores)
     else:
         df_indicadores = mongo.get_indicadores_sankey()
 
@@ -48,8 +49,6 @@ def get_indicadores(indicadores_sele):
     if indicadores_sele is None: # or len(indicadores_sele) == 0:
         return {}, True, 'No hay indicadores selecionados. Por favor seleccione por lo menos un indicador', []
     
-    
-
     indicadores_seleccionados = df_indicadores['indicador'].isin(indicadores_sele)
     df_sankey = df_indicadores[indicadores_seleccionados]
 
@@ -99,7 +98,6 @@ def set_card_funcion(funcion):
         raise dash.exceptions.PreventUpdate
     
     global df_indicadores
-    print(df_indicadores)
 
     proceso_ecologico = df_indicadores[df_indicadores['funcion'] == funcion]['proceso_ecologico'].unique()[0]
     indicadores = df_indicadores[df_indicadores['funcion'] == funcion]['indicador'].unique()
