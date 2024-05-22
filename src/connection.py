@@ -294,6 +294,8 @@ class MongoDB:
             user = os.environ.get("USERNAME")
             collection = self.database['usuarios']
             indicadores_dict = collection.find_one({"usuario": user}, {'indicadores':1,"_id": 0})
+            if indicadores_dict is None:
+                return {}
 
             if indicadores_dict is not None:
                 for indc in indicadores_dict['indicadores']:
@@ -346,7 +348,7 @@ class MongoDB:
                     ssee_indicador:list = indicador['ssee']
                     # s: dict{'numero': int, 'nombre': ''}
                     for s in ssee_indicador:
-                        if s['numero'] is not None:
+                        if s['numero'] is not None and s['numero'] != '0':
                             num_servicio: str = str(s['numero'])
                             if num_servicio not in ssee:
                                 ssee[num_servicio] = s
@@ -362,6 +364,61 @@ class MongoDB:
                                 ssee[num_servicio]['impacto'] = impacto
 
             return ssee
+        
+        except Exception as e:
+            print(traceback.format_exc())
+
+    def get_gestion_ecosistemicas(self) -> list:
+        try:
+            collection_indicadores = self.database['indicadores']
+            indicadores_dict = collection_indicadores.find()
+            
+            gestiones: list = []
+
+            for indicador in indicadores_dict:
+                servicio = indicador['ssee'][0]
+                if servicio['numero'] == '0':
+                    gestiones.append(indicador['nombre'])
+            
+            return gestiones
+        
+        except Exception as e:
+            print(traceback.format_exc())
+
+
+    def get_gestion_ecosistemicas_usuario(self) -> list:
+        try:
+            collection_indicadores = self.database['indicadores']
+            indicadores_dict = collection_indicadores.find()
+            temp_dict = {}
+            for i in indicadores_dict:
+                temp_dict[i['numero']] = i
+
+            indicadores_dict = temp_dict
+
+            collection_usuarios = self.database['usuarios']
+            user = os.environ.get("USERNAME")
+            usuario_dict = collection_usuarios.find_one({"usuario": user}, {'indicadores':1,"_id": 0})
+        
+            gestiones: list = []
+            
+            if usuario_dict is None:
+                return gestiones
+            
+            usuario_dict = usuario_dict['indicadores']
+
+            for indi_usu in usuario_dict:
+                if indi_usu['mide'] == 'SI' and indi_usu['propio'] == None :
+                    num_indicador = indi_usu['numero']
+                    indicador = indicadores_dict[num_indicador]
+                    ssee_indicador:list = indicador['ssee']
+                    # s: dict{'numero': int, 'nombre': ''}
+                    for s in ssee_indicador:
+                        if s['numero'] is not None and s['numero'] == '0':
+                            gestiones.append(indicador['nombre'])
+                            
+
+            return gestiones
         
         except Exception as e:
             print(traceback.format_exc())
@@ -501,6 +558,8 @@ class MongoDB:
             servicios_dict = collection.find_one({"usuario": user}, {'servicios':1,"_id": 0})
 
             df_indicadores = self.get_indicadores_sankey()
+
+            df_sankey = pd.DataFrame()
 
             if servicios_dict is not None:
                 lista_indicadores = []

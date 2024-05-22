@@ -36,6 +36,10 @@ puntos_total = 0
 
 """ ---------------- MÉTODOS ---------------- """
 def definir_nivel():
+    user = os.environ.get("USERNAME")
+    if user is None:
+        return False
+    
     global df_dimensiones, niveles, nivel, puntos_total
     puntos_dimension = mongo.get_puntos_por_dimension()
     df_dimensiones = mongo.get_dimensiones()
@@ -55,6 +59,8 @@ def definir_nivel():
         if puntaje_min <= puntos_total <= puntaje_max:
             nivel = level
 
+    return True
+
 def get_indicadores():
     global df_indicadores
     df_indicadores = mongo.get_indicadores_df()
@@ -67,12 +73,23 @@ def get_indicadores():
      Output('card_puntaje_obtenido','children'),
      Output('card_mejor_dimension','children'),
      Output('dropdown-dimensiones','value'),
-     Output('bar-graph-dimensiones','figure'),],
+     Output('bar-graph-dimensiones','figure'),
+     Output('div-iniciar-sesion','children')],
     Input('title_madurez','children')
 )
 def get_puntos_por_dimension(children):
     global df_dimensiones, niveles, nivel, puntos_total
-    definir_nivel()
+    usuario = definir_nivel()
+    titulo = "Autodiagnóstico empresarial sobre el uso del agua - Resultados"
+    if not usuario:
+        layout_iniciar_sesion = [
+            dbc.Alert('Debe iniciar sesión para poder utilizar su información',color="danger", is_open=True),
+            dbc.Button("Ir a 'Iniciar Sesión'",id='btn-iniciar-sesion-warning', color='danger', className="me-1"),
+            dcc.Location(id='url_iniciar_sesion', refresh=True),
+        ]
+
+        return [titulo],['N/A'], ['N/A'], ['N/A'],None,{}, layout_iniciar_sesion
+
     get_indicadores()
 
     # Dimension con mejor porcentaje de puntos
@@ -85,11 +102,10 @@ def get_puntos_por_dimension(children):
     figure.update_yaxes(title_text='% Puntos obtenidos')
 
     # Titulo madurez
-    titulo = "Autodiagnóstico empresarial sobre el uso del agua - Resultados"
     if os.getenv("USERNAME") is not None:
         titulo = titulo + ": " + os.getenv("USERNAME")
 
-    return [titulo],[nivel], [round(puntos_total,2)], [dimension_max],dimension_max,figure
+    return [titulo],[nivel], [round(puntos_total,2)], [dimension_max],dimension_max,figure, []
 
 
 @callback(
@@ -97,11 +113,13 @@ def get_puntos_por_dimension(children):
      Output('card-porcentaje-dimension','children'),
      Output('definicion-dimension','children'),
      Output('placeholder-nombre-dimension','children')],
-    Input('dropdown-dimensiones','value')
+    Input('dropdown-dimensiones','value'),
 )
 def get_info_dimension_seleccionada(dimension):
-    global df_dimensiones
+    if not definir_nivel():
+        return ['N/A'],['N/A'], [], []
     
+    global df_dimensiones
     puntos_dimension = df_dimensiones.loc[dimension, 'puntos_usuario']
     porcentage_dimension = df_dimensiones.loc[dimension, 'porcentaje_usuario']
     definicion = df_dimensiones.loc[dimension, 'definicion']
@@ -220,7 +238,7 @@ layout = dbc.Container([
                     html.H3(f"Autodiagnóstico empresarial sobre el uso del agua - Resultados",id="title_madurez"),
                 ],
             ),
-            # html.H1("Nivel de madurez", id="title_madurez" ,style={'textAlign': 'center'}),
+            html.Div(id='div-iniciar-sesion'),
             html.Br(),
             html.Hr()
         ], width=12)

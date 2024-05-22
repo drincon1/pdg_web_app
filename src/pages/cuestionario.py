@@ -249,9 +249,12 @@ def get_preguntas():
 
 
 def get_respuestas():
+    user = os.environ.get("USERNAME")
+    if user is None:
+        return False
+    
     global respuestas
     mongo_rsp = mongo.get_respuestas()['respuestas']
-
     dict_respuestas = {}
     for rsp in mongo_rsp:
         if isinstance(rsp, dict):
@@ -260,6 +263,8 @@ def get_respuestas():
             dict_respuestas[rsp[0]['numero']] = rsp
     
     respuestas = dict_respuestas
+
+    return True
 
 
 def update_respuestas():
@@ -334,11 +339,26 @@ def get_hija_num_papa_num_hija(num_papa: str, num_hija: str) -> str:
      Input('background','children'),
 )
 def obtener_primera_pregunta(children):
-    get_respuestas()
-    global preguntas
+    usuario = get_respuestas()
     get_preguntas()
-
+    if not usuario:
+        return [html.Div([
+            dbc.Alert('Debe iniciar sesión para poder utilizar su información',color="danger", is_open=True),
+            dbc.Button("Ir  'Iniciar Sesión'",id='btn-iniciar-sesion-warning', color='danger', className="me-1"),
+            dcc.Location(id='url_iniciar_sesion', refresh=True),
+        ])]
     return obtener_pregunta('1')
+
+@callback(
+    Output('url_iniciar_sesion', 'pathname'),
+    Input('btn-iniciar-sesion-warning', 'n_clicks'),
+    prevent_initial_call=True
+)
+def go_madurez(n_clicks):
+    if n_clicks is None:
+        raise dash.exceptions.PreventUpdate    
+        
+    return '/'
 
 
 @callback(

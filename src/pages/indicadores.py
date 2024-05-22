@@ -68,8 +68,14 @@ def select_indicadores():
     """
         Obtener los indicadores que están almacenados en Mongo DB
     """
+    user = os.environ.get("USERNAME")
+    if user is None:
+        return False
+    
     global indicadores
     indicadores = mongo.get_indicadores_usuario()
+
+    return True
 
 def select_dimensiones():
     """Obtener las dimensiones que se evaluan de cada indicador. 
@@ -165,7 +171,13 @@ def display_dimensiones_indicador(num_indicador: str):
      Input('background','children'),
 )
 def obtener_indicadores(children):
-    select_indicadores()
+    usuario = select_indicadores()
+    if not usuario:
+        return [html.Div([
+            dbc.Alert('Debe iniciar sesión para poder utilizar su información',color="danger", is_open=True),
+            dbc.Button("Ir a 'Iniciar Sesión'",id='btn-iniciar-sesion-warning', color='danger', className="me-1"),
+            dcc.Location(id='url_iniciar_sesion', refresh=True),
+        ])]
     select_dimensiones()
     return display_indicador(numero_indicador="1")
 

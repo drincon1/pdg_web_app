@@ -36,6 +36,9 @@ dash.register_page(__name__)
 def get_ssee():
     global ssee
     ssee = mongo.get_ssee_usuario()
+    user = os.environ.get("USERNAME")
+    if user is None:
+        return False
     
     # ! El siguiente codigo NO se debe borrar
     # El siguiente codigo cambia el numero del ssee por un indice para poder cambiar entre preguntas sin problemas
@@ -47,6 +50,8 @@ def get_ssee():
         indice_display += 1
 
     ssee = ssee_temp
+
+    return True
 
 
 def display_ssee(num_ssee: str):
@@ -97,15 +102,25 @@ def set_servicios_guardar() -> list:
 @callback(
     [Output('seccion-ssee','children'),
      Output('avance-ssee','max'),
-     Output('modal_no_indicadores','is_open')],
+     Output('modal_no_indicadores','is_open'),
+     Output('btn-guardar-ssee','disabled')],
     Input('background','children')
 )
 def display_primer_ssee(children):
     global see
-    get_ssee()
+    usuario = get_ssee()
+
+    if not usuario:
+        return [html.Div([
+            dbc.Alert('Debe iniciar sesión para poder utilizar su información',color="danger", is_open=True),
+            dbc.Button("Ir a 'Iniciar Sesión'",id='btn-iniciar-sesion-warning', color='danger', className="me-1"),
+            dcc.Location(id='url_iniciar_sesion', refresh=True),
+        ])], 1, False, True
+    
     if len(ssee) == 0:
-        return [], 1, True
-    return display_ssee(num_ssee='1'),len(ssee), False
+        return [], 1, True, False
+    
+    return display_ssee(num_ssee='1'),len(ssee), False, False
 
 @callback(
     Output("url_relaciones_ssee", "pathname", allow_duplicate=True),

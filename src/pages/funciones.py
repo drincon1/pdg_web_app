@@ -22,32 +22,49 @@ dash.register_page(__name__)
 
 """ ---------- CALLBACKS ---------- """
 
+
 @callback(
-    Output('dropdown-indicadors','options'),
-    Input('switches-indicadores-seleccionados','value'),
+    [Output('dropdown-indicadors','options'),
+     Output('alert-indicadores', 'is_open'),
+     Output('alert-indicadores', 'children'),
+     Output('alert-indicadores', 'color'),
+     Output('alert-gestiones', 'is_open'),
+     Output('alert-gestiones', 'children'),],
+    Input('switches-indicadores-seleccionados','value')
 )
 def get_indicadores(switch):
     global df_indicadores
     if switch is not None and len(switch) > 0:
         df_indicadores = mongo.get_indicadores_seleccionados_sankey()
-        print(df_indicadores)
+    
+        if df_indicadores.empty:
+            df_indicadores = mongo.get_indicadores_sankey()
+            mensaje = 'Debe iniciar sesión para poder utilizar su información'
+            return df_indicadores['indicador'].unique(), True, mensaje, 'danger', True, mensaje
     else:
         df_indicadores = mongo.get_indicadores_sankey()
 
-    return df_indicadores['indicador'].unique()
+
+    return df_indicadores['indicador'].unique(), False, '', '', False, ''
+
+
 
 @callback(
     [Output('sankey-diagram','figure'),
-     Output('alert-indicadores', 'is_open'),
-     Output('alert-indicadores', 'children'),
-     Output('dropdown-funciones','options')],
-    Input('dropdown-indicadors','value')
+     Output('alert-indicadores', 'is_open',allow_duplicate=True),
+     Output('alert-indicadores', 'children',allow_duplicate=True),
+     Output('dropdown-funciones','options'),
+     Output('alert-funciones', 'is_open'),
+     Output('alert-funciones', 'children'),],
+    Input('dropdown-indicadors','value'),
+    prevent_initial_call=True
 )
 def get_indicadores(indicadores_sele):
     global df_indicadores
     
     if indicadores_sele is None: # or len(indicadores_sele) == 0:
-        return {}, True, 'No hay indicadores selecionados. Por favor seleccione por lo menos un indicador', []
+        mensaje = 'No hay indicadores selecionados. Por favor seleccione por lo menos un indicador'
+        return {}, True, mensaje, [], True, mensaje
     
     indicadores_seleccionados = df_indicadores['indicador'].isin(indicadores_sele)
     df_sankey = df_indicadores[indicadores_seleccionados]
@@ -69,38 +86,48 @@ def get_indicadores(indicadores_sele):
 
     links_dict = links.to_dict(orient='list')
 
+    node_titles = ['Title A', 'Title B', 'Title C']
+
     fig = go.Figure(data=[go.Sankey(
-        node= dict(
-            pad = 15,
-            thickness = 20,
-            # line = dict(color='black'),
-            label = unique_source_target,
-        ),
-        link=dict(
-            source=links_dict['source'],
-            target=links_dict['target'],
-            value=links_dict['value'],
-        )
-    )]
+            node= dict(
+                pad = 15,
+                thickness = 20,
+                # line = dict(color='black'),
+                label = unique_source_target
+            ),
+            link=dict(
+                source=links_dict['source'],
+                target=links_dict['target'],
+                value=links_dict['value'],
+            )
+        )]
     )
 
     fig.update_layout(title_text = 'Relación: Indicadores - Servicios Ecosistémicos - Funciones Ecosistémicas')
 
-    return fig, False, '', df_sankey['funcion'].unique()
+    return fig, False, '', df_sankey['funcion'].unique(), False, '',
 
 
 @callback(
     Output('div-card-funcion','children'),
+    State('dropdown-indicadors','value'),
     Input('dropdown-funciones','value')
 )
-def set_card_funcion(funcion):
+def set_card_funcion(indicadores_sele,funcion):
     if funcion is None:
         raise dash.exceptions.PreventUpdate
     
     global df_indicadores
 
-    proceso_ecologico = df_indicadores[df_indicadores['funcion'] == funcion]['proceso_ecologico'].unique()[0]
-    indicadores = df_indicadores[df_indicadores['funcion'] == funcion]['indicador'].unique()
+    indicadores_seleccionados = df_indicadores['indicador'].isin(indicadores_sele)
+    df_sankey = df_indicadores[indicadores_seleccionados]
+
+    proceso_ecologico = df_sankey[df_sankey['funcion'] == funcion]['proceso_ecologico'].unique()[0].split('-')
+    indicadores = df_sankey[df_sankey['funcion'] == funcion]['indicador'].unique()
+
+    markdown_procesos = ""
+    for prc in proceso_ecologico:
+        markdown_procesos = f'* {prc}\n' + markdown_procesos
 
     markdown_text = ""
     for indc in indicadores:
@@ -108,15 +135,48 @@ def set_card_funcion(funcion):
 
     dcc.Markdown()
     return dbc.Card([
-        dbc.CardHeader('Proceso ecológico e Indicadores asociados ', style={'color':'black'}),
+        dbc.CardHeader('Procesos ecológicos e Indicadores asociados ', style={'color':'black'}),
         dbc.CardBody([
-            html.H5('Proceso ecologico'),
-            html.P(proceso_ecologico),
+            html.H5('Procesos ecologicos'),
+            dcc.Markdown(markdown_procesos),
             html.Hr(),
             html.H5('Indicadores'),
             dcc.Markdown(markdown_text),
             # html.P([f'- {indc}' for indc in indicadores])
         ], style={'color':'black'})
+    ])
+
+
+@callback(
+    Output('div-card-gestion','children'),
+    [Input('div-card-gestion','children'),
+     Input('switches-indicadores-seleccionados','value')]
+)
+def set_card_gestiones(funcion, switch):
+    gestiones: list = []
+
+    if switch is not None and len(switch) > 0:
+        gestiones = mongo.get_gestion_ecosistemicas_usuario()
+    else:
+        gestiones = mongo.get_gestion_ecosistemicas()
+
+    if gestiones is None or len(gestiones) == 0:
+        raise dash.exceptions.PreventUpdate
+
+    markdown_text = ""
+    for gst in gestiones:
+        markdown_text = f'* {gst}\n' + markdown_text
+
+    dcc.Markdown()
+    return dbc.Card([
+        dbc.CardHeader('Indicadores asociados a la gestión ecosistémica', style={'color':'black'}),
+        dbc.CardBody([
+            html.H5('Indicadores'),
+            dcc.Markdown(markdown_text),
+            html.Hr(),
+            html.H5('¿Qué es una gestión ecosistémica?'),
+            html.P('Definición de gestión ecosistémica'),
+            ], style={'color':'black'})
     ])
 
 @callback(
@@ -154,10 +214,11 @@ layout = dbc.Container([
             html.H3('Relación'),
             dbc.Label('Seleccione los indicadores que desea incluir en la gráfica'),
             dbc.Checklist(
-                options=[{'label':"Indicadores seleccionados", 'value': True}],
+                options=[{'label':html.P('Indicadores seleccionados',id='target-indicadores'), 'value': 'Indicadores seleccionados'}],
                 id="switches-indicadores-seleccionados",
                 switch=True,
             ),
+            dbc.Tooltip("Solo aparecen los indicadores que escogió en la sección 'Indicadores'",target="target-indicadores",),
             dbc.Alert(color="warning", id='alert-indicadores', is_open=False),
             dcc.Dropdown(id="dropdown-indicadors", multi=True),
             dcc.Graph(
@@ -170,9 +231,15 @@ layout = dbc.Container([
     dbc.Row([
         dbc.Col([
             html.H3('Funciones ecosistémicas'),
+            dbc.Alert(color="warning", id='alert-funciones', is_open=False),
             dcc.Dropdown(id="dropdown-funciones", style={'margin-bottom':'30px'}),
             html.Div(id='div-card-funcion')
-        ], width=8)
+        ], width=5),
+        dbc.Col([
+            html.H3('Gestiones ecosistémicas'),
+            dbc.Alert(color="danger", id='alert-gestiones', is_open=False),
+            html.Div(id='div-card-gestion')
+        ], width=5)
     ],justify="center"),
     dbc.Row([
         html.Div(className='seccion-terminar', children=[
